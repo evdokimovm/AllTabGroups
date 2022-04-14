@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html style="height: 100%;">
+
+<head>
+    <title>All Tabs</title>
+</head>
+<link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
+    crossorigin="anonymous">
+<style>
+    body {
+        font-family: 'Lato', sans-serif;
+        height: 100%;
+    }
+
+    textarea {
+        background: #F4F4F4;
+        border: 0px solid #F4F4F4;
+        border-radius: 10px;
+        padding: 20px;
+        outline: none;
+        height: auto;
+        min-height: 500px;
+        width: 100%;
+        white-space: nowrap;
+        overflow-y: auto;
+        resize: vertical;
+    }
+
+    .p-tb-20 {
+        padding-top: 20px;
+        padding-bottom: 20px;
+    }
+
+    .p-lr-10 {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .p-lr-20 {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .p-l-20 {
+        padding-left: 20px;
+    }
+
+    .m-lr-20 {
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+
+    .btn-black {
+        height: 36px;
+        background: #000;
+        color: #FFF;
+        border-radius: 0px;
+        padding-left: 30px;
+        padding-right: 30px;
+        font-size: 12px;
+        transition: 0.5s
+    }
+
+    .btn-black:hover {
+        color: #DADADA;
+    }
+
+    .delete_file {
+        height: 36px;
+        background: #F4F4F4;
+        color: #D0011B;
+        border-radius: 0px;
+        padding-left: 30px;
+        padding-right: 30px;
+        font-size: 12px;
+        transition: 0.5s;
+        display: none;
+    }
+
+    .delete_file:hover {
+        background: #D0011B;
+        color: #F4F4F4;
+    }
+
+    .btn-grey {
+        height: 36px;
+        background: #8E8E8E;
+        color: #FFF;
+        border-radius: 0px;
+        padding-left: 30px;
+        padding-right: 30px;
+        font-size: 12px;
+        line-height: 22px;
+    }
+
+    .btn-grey:hover {
+        color: #DADADA;
+    }
+
+    .input-light {
+        height: 36px;
+        border-radius: 0px;
+        border: 1px solid #DADADA;
+    }
+
+    .list {
+        list-style: none;
+        padding: 0px;
+        margin: 20px 0px;
+        overflow: scroll;
+        overflow-x: auto;
+        overflow-y: auto;
+    }
+
+    .list li a {
+        display: block;
+        padding: 10px 15px;
+        border-bottom: 1px solid #F4F4F4;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        box-sizing: border-box;
+        border-radius: 6px;
+        transition: .2s;
+    }
+
+    .list li a:hover {
+        background: #000;
+    }
+
+    .list li h5 {
+        color: #494A4B;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 16px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        margin: 0px;
+    }
+
+    .list li span {
+        color: #7D7D7D;
+        font-size: 11px;
+        font-weight: 300;
+        line-height: 14px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .file_action {
+        padding: 0 10px 20px 10px;
+    }
+
+    .file_action h5 {
+        font-weight: 900;
+    }
+
+    .file_action .delete_files {
+        border-radius: 0px;
+        color: #D0011B;
+        background: #F4F4F4;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    .public_icon {
+        background: url(img/public.png) no-repeat right center;
+        background-size: auto 20px;
+    }
+
+    select {
+        text-transform: capitalize;
+    }
+</style>
+
+<body>
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="p-tb-20 p-lr-10">
+                <button type="button" class="btn btn-black opentabs">OPEN ALL</button>
+                <button type="button" class="btn btn-grey export_all_files">EXPORT ALL</button>
+                <button type="button" class="btn btn-grey import_all_files">IMPORT ALL</button>
+                <ul class="list links"></ul>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="p-tb-20">
+                <button type="button" class="btn btn-black copy" data-clipboard-target="textarea">COPY</button>
+                <button type="button" class="btn btn-grey export_file" disabled>EXPORT FILE</button>
+                <button type="button" class="btn btn-grey import_file">IMPORT FILE</button>
+                <button type="button" class="btn m-lr-20 delete_file" data-id="">DELETE FILE</button>
+
+                Choose the group: <select class="form-select" style="height: 36px;" id="select_color"></select>
+            </div>
+            <textarea></textarea>
+        </div>
+        <div class="col-sm-3">
+            <div class="p-tb-20 p-lr-10">
+                <div class="input-group">
+                    <input type="text" name="filename" class="form-control input-light" placeholder="File Name">
+                    <span class="input-group-btn">
+                        <button class="btn btn-black save" type="button">SAVE</button>
+                    </span>
+                </div>
+            </div>
+            <div class="file_action">
+                <h5 class="pull-left">FILES</h5><button class="btn btn-xs delete_files pull-right">DELETE ALL</button>
+            </div>
+            <div style="padding-right: 10px;">
+                <ul class="list files"></ul>
+            </div>
+        </div>
+    </div>
+    <script src="js/vendor/jquery-2.2.4.min.js"></script>
+    <script src="js/vendor/clipboard.js"></script>
+    <script src="js/vendor/is.min.js"></script>
+    <script src="js/vendor/moment.min.js"></script>
+    <script src="js/options.js"></script>
+</body>
+
+</html>

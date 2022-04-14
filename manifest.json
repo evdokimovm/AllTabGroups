@@ -1,0 +1,43 @@
+{
+    "background": {
+        "service_worker": "js/background.js"
+    },
+    "action": {
+        "default_icon": "img/icon-active.png",
+        "default_title": "AllTabs"
+    },
+    "content_scripts": [
+        {
+            "js": [
+                "js/vendor/jquery-2.2.4.min.js",
+                "js/vendor/is.min.js",
+                "js/vendor/clipboard.js",
+                "js/vendor/moment.min.js"
+            ],
+            "matches": [
+                "*://*/*"
+            ]
+        }
+    ],
+    "description": "Manage Tabs",
+    "icons": {
+        "128": "icon128.png",
+        "16": "icon16.png",
+        "48": "icon48.png"
+    },
+    "manifest_version": 3,
+    "name": "AllTabs",
+    "options_page": "options.html",
+    "permissions": [
+        "tabGroups",
+        "tabs",
+        "storage",
+        "downloads",
+        "bookmarks"
+    ],
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
+    ],
+    "version": "1.0"
+}
