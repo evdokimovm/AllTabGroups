@@ -102,7 +102,7 @@ function clearAll() {
 function generateURLTitlePairs(tabs) {
     var urls = ""
     for (var tab of tabs) {
-        if (!tab.url.includes('chrome')) {
+        if (tab.url.indexOf('chrome') !== 0) {
             urls += tab.title + "\n" + tab.url + "\n\n"
         }
     }
