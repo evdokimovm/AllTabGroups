@@ -1,5 +1,3 @@
-var files = []
-
 var possible_colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange']
 
 function getTabsFromCertainGroup(tab_type) {
@@ -98,42 +96,37 @@ function linkPreview() {
 function showFiles() {
     var file_list = $('.files')
     file_list.html('')
-    chrome.storage.local.get('files', function (value) {
-        files = value['files']
-        $.each(value.files, function (i, file) {
+    chrome.storage.local.get('files', function (files) {
+        var files = files.files
+        for (var i = 0; i < files.length; i++) {
             var li_element = ""
-            if (file) {
-                li_element += "<li class='public_icon'>"
-
-                li_element += "<a href='#' data-id='" + file.id + "' class='file'>"
-                li_element += "<h5>" + file.name + "</h5><span>" + file.time + "</span></a>"
-                li_element += "</li>"
-
-                file_list.prepend(li_element)
-            }
-        })
+            li_element += "<li class='public_icon'>" + "<a href='#' data-id='" + files[i].id + "' class='file'>" + "<h5>" + files[i].name + "</h5><span>" + files[i].time + "</span></a>" + "</li>"
+            file_list.prepend(li_element)
+        }
     })
 }
 
 function deleteFile(id) {
-    $.each(files, function (i, v) {
-        if (v.id == id) {
-            files.splice(i, 1)
-            chrome.storage.local.set({ 'files': files }, function () {
-                window.location.reload()
-            })
+    chrome.storage.local.get('files', function (files) {
+        var files = files.files
+        for (var i = 0; i < files.length; i++) {
+            if (files[i].id == id) {
+                files.splice(i, 1)
+                chrome.storage.local.set({ 'files': files }, function () {
+                    window.location.reload()
+                })
+            }
         }
     })
 }
 
 function addFile(new_file) {
-    chrome.storage.local.get('files', function (value) {
-        if (typeof value["files"] !== "undefined" && value["files"] !== "") {
-            var files = value["files"]
+    chrome.storage.local.get('files', function (data) {
+        if (data.files) {
+            var files = data.files
             files.push(new_file)
-        }
-        else {
-            var files = [];
+        } else {
+            var files = []
             files.push(new_file)
         }
         chrome.storage.local.set({ 'files': files }, function () {
@@ -270,16 +263,20 @@ $('.save').on('click', function () {
 
 $(document).on('click', '.file', function () {
     var id = $(this).attr('data-id')
-    $.each(files, function (i, v) {
-        if (v.id == id) {
-            $('textarea').val(v.links)
-            $('input[name=filename]').val(v.name)
-            $('.links').html('')
-            linkPreview()
-            $('.export_file').attr('data-id', id)
-            $('.export_file').prop('disabled', false)
-            $('.delete_file').show()
-            $('.delete_file').attr('data-id', id)
+
+    chrome.storage.local.get('files', function (files) {
+        var files = files.files
+        for (var i = 0; i < files.length; i++) {
+            if (files[i].id == id) {
+                $('textarea').val(files[i].links)
+                $('input[name=filename]').val(files[i].name)
+                $('.links').html('')
+                linkPreview()
+                $('.export_file').attr('data-id', id)
+                $('.export_file').prop('disabled', false)
+                $('.delete_file').show()
+                $('.delete_file').attr('data-id', id)
+            }
         }
     })
 })
