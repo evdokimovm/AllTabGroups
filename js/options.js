@@ -66,6 +66,12 @@ function setHeight() {
     document.querySelector('textarea').setAttribute("style", `height: ${window.innerHeight / 1.5}px`)
 }
 
+function copy() {
+    var copyText = document.querySelector("textarea")
+    copyText.select()
+    document.execCommand("copy")
+}
+
 function linkPreview() {
     var links = ''
     var link_text = document.querySelector('textarea').value
@@ -156,7 +162,7 @@ $('#select_color').change(function ($e) {
 readTabs()
 fillSelectBox()
 showFiles()
-new Clipboard('.copy')
+document.querySelector(".copy").addEventListener("click", copy)
 $('input[name=filename]').val(moment().format('DD MMM YYYY, h:mm a'))
 
 document.querySelector('button.opentabs').addEventListener('click', function () {
