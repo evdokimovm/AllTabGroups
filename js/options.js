@@ -2,18 +2,58 @@ var files = []
 
 var possible_colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange']
 
+function getTabsFromCertainGroup(tab_type) {
+    if (tab_type == "All Tabs") {
+        readTabs()
+    } else {
+        getEitherByColorOrTitle(tab_type)
+    }
+}
+
+function getByColor(color) {
+    chrome.tabGroups.query({ color: color }, function (groups) {
+        chrome.tabs.query({ groupId: groups[0].id }, function (tabs) {
+            $('textarea').val(generateURLTitlePairs(tabs))
+            linkPreview()
+        })
+    })
+}
+
+function getByTitle(title) {
+    chrome.tabGroups.query({ title: title }, function (groups) {
+        chrome.tabs.query({ groupId: groups[0].id }, function (tabs) {
+            $('textarea').val(generateURLTitlePairs(tabs))
+            linkPreview()
+        })
+    })
+}
+
+function getEitherByColorOrTitle(label) {
+    if (possible_colors.includes(label)) {
+        getByColor(label)
+    } else {
+        getByTitle(label)
+    }
+}
+
 function fillSelectBox() {
     var selectElement = document.querySelector('#select_color')
     selectElement.querySelectorAll('option').forEach(option => option.remove())
     selectElement.add(new Option('All Tabs'))
 
-    for (var color of possible_colors) {
-        chrome.tabGroups.query({ color: color }, function (group) {
-            if (!group.length) return
-
-            selectElement.add(new Option(group[0].color))
+    chrome.windows.getCurrent(function (win) {
+        chrome.tabGroups.query({ windowId: win.id }, function (groups) {
+            for (var i = 0; i < groups.length; i++) {
+                if (groups[i].title) {
+                    selectElement.add(new Option(groups[i].title))
+                } else {
+                    selectElement.add(new Option(groups[i].color))
+                }
+            }
         })
-    }
+    })
+
+    getTabsFromCertainGroup("All Tabs")
 }
 
 chrome.tabGroups.onUpdated.addListener(fillSelectBox)
@@ -27,21 +67,13 @@ function setHeight() {
 }
 
 function linkPreview() {
-    var line_1 = ''
-    var line_2 = ''
     var links = ''
-    var link_text = $('textarea').val()
-    var lines = link_text.split('\n')
-    for (var i = 0; i < lines.length; i++) {
-        line_1 = line_2
-        line_2 = lines[i]
-        if (is.url(line_2) && !is.url(line_1)) {
-
-            links += "<li><a href='" + line_2 + "' target='_blank'><h5>" + line_1 + "</h5><span>" + line_2.replace(/^https?\:\/\//i, "") + "</span></a></li>"
-
-            line_1 = ''
-            line_2 = ''
-        }
+    var link_text = document.querySelector('textarea').value
+    var lines = link_text.trim().split('\n').filter(Boolean)
+    for (var i = 0; i < lines.length; i += 2) {
+        /* if (is.url(lines[i + 1]) && !is.url(lines[i])) { */
+            links += "<li><a href='" + lines[i + 1] + "' target='_blank'><h5>" + lines[i] + "</h5><span>" + lines[i + 1].replace(/^https?\:\/\//i, "") + "</span></a></li>"
+        /* } */
     }
     $('.links').html(links)
 }
@@ -117,19 +149,6 @@ function readTabs() {
     })
 }
 
-function getTabsFromCertainGroup(tab_type) {
-    if (possible_colors.includes(tab_type)) {
-        chrome.tabGroups.query({ color: tab_type }, function (groups) {
-            chrome.tabs.query({ groupId: groups[0].id }, function (tabs) {
-                $('textarea').val(generateURLTitlePairs(tabs))
-                linkPreview()
-            })
-        })
-    } else {
-        readTabs()
-    }
-}
-
 $('#select_color').change(function ($e) {
     getTabsFromCertainGroup($(this).val())
 })
@@ -162,6 +181,16 @@ var props = {
     excludeAcceptAllOption: true
 }
 
+async function pickFile(props) {
+    var handles = await showOpenFilePicker(props)
+    var file = await handles[0].getFile()
+
+    var import_contents = await file.text()
+    var json_cnt = await JSON.parse(import_contents)
+
+    return json_cnt
+}
+
 document.querySelector('button.export_file').addEventListener('click', function () {
     var _id = $(this).attr('data-id')
     var _filename = document.querySelector('input[name=filename]')
@@ -182,11 +211,7 @@ document.querySelector('button.export_file').addEventListener('click', function 
 })
 
 document.querySelector('button.import_file').addEventListener('click', async function () {
-    var handles = await showOpenFilePicker(props)
-    var file = await handles[0].getFile()
-
-    var import_contents = await file.text()
-    var json_cnt = await JSON.parse(import_contents)
+    var json_cnt = await pickFile(props)
 
     addFile(json_cnt)
 
@@ -206,13 +231,9 @@ document.querySelector('button.export_all_files').addEventListener('click', func
 })
 
 document.querySelector('button.import_all_files').addEventListener('click', async function () {
-    var handles = await showOpenFilePicker(props)
-    var file = await handles[0].getFile()
+    var json_cnt = await pickFile(props)
 
-    var import_contents = await file.text()
-    var jsoned = JSON.parse(import_contents)
-
-    chrome.storage.local.set({ 'files': jsoned.files }, function () {
+    chrome.storage.local.set({ 'files': json_cnt.files }, function () {
         window.location.reload()
     })
 })
