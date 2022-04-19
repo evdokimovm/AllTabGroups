@@ -9,8 +9,7 @@
     "content_scripts": [
         {
             "js": [
-                "js/vendor/jquery-2.2.4.min.js",
-                "js/vendor/is.min.js"
+                "js/vendor/jquery-2.2.4.min.js"
             ],
             "matches": [
                 "*://*/*"

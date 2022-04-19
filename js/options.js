@@ -79,14 +79,18 @@ function getDate() {
     return _date
 }
 
+function arrayFromTextarea() {
+    var link_text = document.querySelector('textarea').value
+    var lines = link_text.split('\n').filter(Boolean)
+
+    return lines
+}
+
 function linkPreview() {
     var links = ''
-    var link_text = document.querySelector('textarea').value
-    var lines = link_text.trim().split('\n').filter(Boolean)
+    var lines = arrayFromTextarea()
     for (var i = 0; i < lines.length; i += 2) {
-        /* if (is.url(lines[i + 1]) && !is.url(lines[i])) { */
-            links += "<li><a href='" + lines[i + 1] + "' target='_blank'><h5>" + lines[i] + "</h5><span>" + lines[i + 1].replace(/^https?\:\/\//i, "") + "</span></a></li>"
-        /* } */
+        links += "<li><a href='" + lines[i + 1] + "' target='_blank'><h5>" + lines[i] + "</h5><span>" + lines[i + 1].replace(/^https?\:\/\//i, "") + "</span></a></li>"
     }
     $('.links').html(links)
 }
@@ -173,11 +177,9 @@ document.querySelector(".copy").addEventListener("click", copy)
 $('input[name=filename]').val(getDate())
 
 document.querySelector('button.opentabs').addEventListener('click', function () {
-    var lines = $('textarea').val().split('\n')
-    for (var i = 0; i < lines.length; i++) {
-        if (is.url(lines[i])) {
-            chrome.tabs.create({ url: lines[i] })
-        }
+    var lines = arrayFromTextarea()
+    for (var i = 0; i < lines.length; i += 2) {
+        chrome.tabs.create({ url: lines[i + 1] })
     }
 })
 
