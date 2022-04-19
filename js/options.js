@@ -72,6 +72,22 @@ function copy() {
     document.execCommand("copy")
 }
 
+function getDate() {
+    var date = new Date()
+    var options = {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    }
+    var _date = date.toLocaleTimeString('default', options)
+
+    return _date
+}
+
 function linkPreview() {
     var links = ''
     var link_text = document.querySelector('textarea').value
@@ -163,7 +179,7 @@ readTabs()
 fillSelectBox()
 showFiles()
 document.querySelector(".copy").addEventListener("click", copy)
-$('input[name=filename]').val(moment().format('DD MMM YYYY, h:mm a'))
+$('input[name=filename]').val(getDate())
 
 document.querySelector('button.opentabs').addEventListener('click', function () {
     var lines = $('textarea').val().split('\n')
@@ -209,7 +225,7 @@ document.querySelector('button.export_file').addEventListener('click', function 
 
                 chrome.downloads.download({
                     url: url,
-                    filename: (_filename.value.replace(':', ' ')) + '.json'
+                    filename: (_filename.value.replaceAll(':', ' ')) + '.json'
                 })
             }
         }
@@ -246,8 +262,8 @@ document.querySelector('button.import_all_files').addEventListener('click', asyn
 
 $('.save').on('click', function () {
     var file_obj = {}
-    file_obj.id = moment().format('x')
-    file_obj.time = moment().format('DD MMM YYYY, h:mm a')
+    file_obj.id = String(+ new Date())
+    file_obj.time = getDate()
     file_obj.links = $('textarea').val()
 
     if ($('input[name=filename]').val() == "") {
