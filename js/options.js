@@ -10,17 +10,8 @@ function getTabsFromCertainGroup(tab_type) {
     }
 }
 
-function getByColor(color) {
-    chrome.tabGroups.query({ color: color }, function (groups) {
-        chrome.tabs.query({ groupId: groups[0].id }, function (tabs) {
-            $('textarea').val(generateURLTitlePairs(tabs))
-            linkPreview()
-        })
-    })
-}
-
-function getByTitle(title) {
-    chrome.tabGroups.query({ title: title }, function (groups) {
+function getBy(option) {
+    chrome.tabGroups.query(option, function (groups) {
         chrome.tabs.query({ groupId: groups[0].id }, function (tabs) {
             $('textarea').val(generateURLTitlePairs(tabs))
             linkPreview()
@@ -30,9 +21,9 @@ function getByTitle(title) {
 
 function getEitherByColorOrTitle(label) {
     if (possible_colors.includes(label)) {
-        getByColor(label)
+        getBy({ color: label })
     } else {
-        getByTitle(label)
+        getBy({ title: label })
     }
 }
 
