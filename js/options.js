@@ -44,7 +44,7 @@ function getEitherByColorOrTitle(label) {
 }
 
 function fillSelectBox() {
-    selectElement.querySelectorAll('option').forEach(option => option.remove())
+    selectElement.options.length = 0
     selectElement.add(new Option('All Tabs'))
 
     chrome.windows.getCurrent(function (win) {
