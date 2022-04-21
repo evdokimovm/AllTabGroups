@@ -6,16 +6,6 @@
         "default_icon": "img/icon-active.png",
         "default_title": "AllTabGroups"
     },
-    "content_scripts": [
-        {
-            "js": [
-                "js/vendor/jquery-2.2.4.min.js"
-            ],
-            "matches": [
-                "*://*/*"
-            ]
-        }
-    ],
     "description": "Manage tabs. Instant save, export and import tabs from certain groups called either as default color or custom title.",
     "icons": {
         "128": "img/icon128.png",
