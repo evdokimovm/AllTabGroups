@@ -6,7 +6,7 @@
         "default_icon": "img/icon-active.png",
         "default_title": "AllTabGroups"
     },
-    "description": "Manage tabs with AllTabGroups. Instant save, export and import tabs from certain groups called either as default color or custom title.",
+    "description": "Manage tabs with AllTabGroups. Convenient way to instantly save, export and import either all currently open tabs or tabs separated by groups called either as default color or custom title.",
     "icons": {
         "16": "img/icon16.png",
         "48": "img/icon48.png",
