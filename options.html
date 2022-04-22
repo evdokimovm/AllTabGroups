@@ -38,9 +38,8 @@
         padding-right: 10px;
     }
 
-    .btn-black {
+    .btn-common, .grey, .black, .red {
         height: 36px;
-        background: #000;
         color: #FFF;
         border-radius: 0px;
         padding-left: 30px;
@@ -49,23 +48,30 @@
         transition: 0.5s
     }
 
-    .btn-black:hover {
+    .black {
+        background: #000;
+    }
+
+    .black:hover {
         color: #DADADA;
     }
 
-    .btn-grey {
-        height: 36px;
+    .grey {
         background: #8E8E8E;
-        color: #FFF;
-        border-radius: 0px;
-        padding-left: 30px;
-        padding-right: 30px;
-        font-size: 12px;
-        line-height: 22px;
     }
 
-    .btn-grey:hover {
+    .grey:hover {
         color: #DADADA;
+    }
+
+    .red {
+        background: #FF2400;
+        opacity: 0.80;
+    }
+
+    .red:hover {
+        color: whitesmoke;
+        opacity: 0.75;
     }
 
     .input-light {
@@ -141,18 +147,18 @@
         <div class="row">
             <div class="col-md-3">
                 <div class="p-tb-20 p-lr-10">
-                    <button type="button" class="btn btn-black opentabs">OPEN ALL</button>
-                    <button type="button" class="btn btn-grey export_all_files">EXPORT ALL</button>
-                    <button type="button" class="btn btn-grey import_all_files">IMPORT ALL</button>
+                    <button type="button" class="btn btn-common black opentabs">OPEN ALL</button>
+                    <button type="button" class="btn btn-common grey export_all_files">EXPORT ALL</button>
+                    <button type="button" class="btn btn-common grey import_all_files">IMPORT ALL</button>
                     <ul class="list links"></ul>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="p-tb-20">
-                    <button type="button" class="btn btn-black copy">COPY</button>
-                    <button type="button" class="btn btn-grey export_file" disabled>EXPORT FILE</button>
-                    <button type="button" class="btn btn-grey import_file">IMPORT FILE</button>
-                    <button type="button" style="display: none;" class="btn btn-black delete_file">DELETE FILE</button>
+                    <button type="button" class="btn btn-common black copy">COPY</button>
+                    <button type="button" class="btn btn-common grey export_file" disabled>EXPORT FILE</button>
+                    <button type="button" class="btn btn-common grey import_file">IMPORT FILE</button>
+                    <button type="button" style="display: none;" class="btn btn-common red delete_file">DELETE FILE</button>
 
                     Choose the group: <select class="form-select" style="height: 36px;" id="select_color"></select>
                 </div>
@@ -163,12 +169,12 @@
                     <div class="input-group">
                         <input type="text" name="filename" class="form-control input-light" placeholder="File Name">
                         <span class="input-group-btn">
-                            <button class="btn btn-black save" type="button">SAVE</button>
+                            <button class="btn btn-common black save" type="button">SAVE</button>
                         </span>
                     </div>
                 </div>
                 <div class="file_action">
-                    <h5 class="pull-left">FILES</h5><button class="btn btn-black delete_files pull-right">DELETE ALL</button>
+                    <h5 class="pull-left">FILES</h5><button class="btn btn-common red delete_files pull-right">DELETE ALL</button>
                 </div>
                 <div style="padding-right: 10px;">
                     <ul class="list files"></ul>
