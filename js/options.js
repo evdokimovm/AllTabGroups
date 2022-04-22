@@ -18,6 +18,8 @@ var export_all_files_button = document.querySelector('button.export_all_files')
 
 var possible_colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange']
 
+var separator = ' - '
+
 function getTabsFromCertainGroup(tab_type) {
     if (tab_type == "All Tabs") {
         readTabs()
@@ -35,11 +37,31 @@ function getBy(option) {
     })
 }
 
-function getEitherByColorOrTitle(label) {
-    if (possible_colors.includes(label)) {
-        getBy({ color: label })
+function splitLabel(label) {
+    var color = ''
+    var title = ''
+
+    if (label.includes(separator)) {
+        color = label.substring(0, label.indexOf(separator))
+        title = label.substring(label.indexOf(separator) + separator.length)
     } else {
-        getBy({ title: label })
+        color = label
+        title = ''
+    }
+
+    return {
+        color: color,
+        title: title
+    }
+}
+
+function getEitherByColorOrTitle(label) {
+    var { color, title } = splitLabel(label)
+
+    if (possible_colors.includes(color) && title) {
+        getBy({ color: color, title: title })
+    } else {
+        getBy({ color: color, title: title })
     }
 }
 
@@ -51,9 +73,9 @@ function fillSelectBox() {
         chrome.tabGroups.query({ windowId: win.id }, function (groups) {
             for (var i = 0; i < groups.length; i++) {
                 if (groups[i].title) {
-                    selectElement.add(new Option(groups[i].title))
+                    selectElement.add(new Option(`${groups[i].color}${separator}${groups[i].title}`))
                 } else {
-                    selectElement.add(new Option(groups[i].color))
+                    selectElement.add(new Option(`${groups[i].color}`))
                 }
             }
         })
