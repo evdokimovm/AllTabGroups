@@ -109,8 +109,28 @@ function linkPreview() {
     links_list.innerHTML = links
 }
 
+function deleteFolderActiveClass() {
+    var active_folder = document.querySelector('a.active')
+
+    if (active_folder) {
+        active_folder.classList.remove('active')
+    }
+}
+
+function addActiveClassOnOpenedFolder(e) {
+    deleteFolderActiveClass()
+
+    if (e.target.tagName == 'A') {
+        e.target.classList.add('active')
+    } else {
+        e.target.parentNode.classList.add('active')
+    }
+}
+
 function readFile(e) {
     var id = e.target.dataset.id || e.target.parentNode.dataset.id
+
+    addActiveClassOnOpenedFolder(e)
 
     chrome.storage.local.get('files', function (files) {
         var files = files.files
