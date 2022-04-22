@@ -1,4 +1,4 @@
-var list = document.querySelector('.list')
+var list = document.querySelectorAll('.list')
 var file_list = document.querySelector('.files')
 var links_list = document.querySelector('.links')
 var selectElement = document.querySelector('#select_color')
@@ -68,7 +68,8 @@ chrome.tabGroups.onRemoved.addListener(fillSelectBox)
 chrome.tabGroups.onMoved.addListener(fillSelectBox)
 
 function setHeight() {
-    list.setAttribute("style", `height: ${window.innerHeight / 1.5}px`)
+    list[0].setAttribute("style", `height: ${window.innerHeight / 1.5}px`)
+    list[1].setAttribute("style", `height: ${window.innerHeight / 1.6}px`)
     textarea.setAttribute("style", `height: ${window.innerHeight / 1.5}px`)
 }
 
