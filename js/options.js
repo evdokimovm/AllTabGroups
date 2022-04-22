@@ -105,7 +105,7 @@ function linkPreview() {
     var links = ''
     var lines = arrayFromTextarea()
     for (var i = 0; i < lines.length; i += 2) {
-        links += "<li><a href='" + lines[i + 1] + "' target='_blank'><h5>" + lines[i] + "</h5><span>" + lines[i + 1].replace(/^https?\:\/\//i, "") + "</span></a></li>"
+        links += "<li><a href='" + lines[i + 1] + "' target='_blank'><h5>" + lines[i] + "</h5><span>" + lines[i + 1] + "</span></a></li>"
     }
     links_list.innerHTML = links
 }
