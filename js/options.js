@@ -325,6 +325,10 @@ save_button.addEventListener('click', function() {
     return false
 })
 
+textarea.addEventListener('input', function() {
+    linkPreview()
+})
+
 delete_files_button.addEventListener('click', function() {
     if (confirm('Sure?')) {
         clearAll()
