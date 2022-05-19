@@ -245,7 +245,7 @@ function readTabs() {
     })
 }
 
-selectElement.addEventListener('change', function(e) {
+selectElement.addEventListener('change', function (e) {
     getTabsFromCertainGroup(e.target.value)
 })
 
@@ -332,7 +332,7 @@ import_all_files_button.addEventListener('click', async function () {
     })
 })
 
-save_button.addEventListener('click', function() {
+save_button.addEventListener('click', function () {
     var file_obj = {}
     file_obj.id = String(+ new Date())
     file_obj.time = getDate()
@@ -347,17 +347,17 @@ save_button.addEventListener('click', function() {
     return false
 })
 
-textarea.addEventListener('input', function() {
+textarea.addEventListener('input', function () {
     linkPreview()
 })
 
-delete_files_button.addEventListener('click', function() {
+delete_files_button.addEventListener('click', function () {
     if (confirm('Sure?')) {
         clearAll()
     }
 })
 
-delete_file_button.addEventListener('click', function(e) {
+delete_file_button.addEventListener('click', function (e) {
     if (confirm('Sure?')) {
         deleteFile(e.target.dataset.id)
         return false
