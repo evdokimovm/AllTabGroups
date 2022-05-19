@@ -8,6 +8,7 @@ var filename_input = document.querySelector('input[name=filename]')
 
 var copy_button = document.querySelector('.copy')
 var save_button = document.querySelector('.save')
+var rename_file_button = document.querySelector('.rename')
 var opentabs_button = document.querySelector('button.opentabs')
 var export_file_button = document.querySelector('.export_file')
 var delete_file_button = document.querySelector('.delete_file')
@@ -150,27 +151,6 @@ function addActiveClassOnOpenedFolder(e) {
     }
 }
 
-function readFile(e) {
-    var id = e.target.dataset.id || e.target.parentNode.dataset.id
-
-    addActiveClassOnOpenedFolder(e)
-
-    chrome.storage.local.get('files', function (files) {
-        var files = files.files
-        for (var i = 0; i < files.length; i++) {
-            if (files[i].id == id) {
-                textarea.value = files[i].links
-                filename_input.value = files[i].name
-                linkPreview()
-                export_file_button.dataset.id = id
-                export_file_button.disabled = false
-                delete_file_button.style.display = 'inline-block'
-                delete_file_button.dataset.id = id
-            }
-        }
-    })
-}
-
 function showFiles() {
     file_list.innerHTML = ''
     chrome.storage.local.get('files', function (files) {
@@ -184,7 +164,7 @@ function showFiles() {
             a_element.className = 'file'
             a_element.innerHTML = "<h5>" + files[i].name + "</h5><span>" + files[i].time + "</span>"
 
-            a_element.addEventListener('click', readFile)
+            a_element.addEventListener('click', (e) => findByIdThenPerform(e, readFile))
 
             li_element.appendChild(a_element)
             file_list.insertBefore(li_element, file_list.firstChild)
@@ -198,17 +178,47 @@ function storageSave(files) {
     })
 }
 
-function deleteFile(id) {
+function findByIdThenPerform(e, callback) {
+    var id = e.target.dataset.id || e.target.parentNode.dataset.id
+
     chrome.storage.local.get('files', function (files) {
         var files = files.files
         for (var i = 0; i < files.length; i++) {
             if (files[i].id == id) {
-                files.splice(i, 1)
-
-                storageSave(files)
+                callback(e, files, i)
             }
         }
     })
+}
+
+function readFile(e, files, index) {
+    var id = e.target.dataset.id || e.target.parentNode.dataset.id
+
+    addActiveClassOnOpenedFolder(e)
+
+    textarea.value = files[index].links
+    filename_input.value = files[index].name
+
+    linkPreview()
+
+    export_file_button.dataset.id = id
+    export_file_button.disabled = false
+    delete_file_button.style.display = 'inline-block'
+    delete_file_button.dataset.id = id
+    rename_file_button.disabled = false
+    rename_file_button.dataset.id = id
+}
+
+function renameFile(e, files, index) {
+    files[index].name = filename_input.value
+
+    storageSave(files)
+}
+
+function deleteFile(e, files, index) {
+    files.splice(index, 1)
+
+    storageSave(files)
 }
 
 function addFile(new_file) {
@@ -356,9 +366,16 @@ delete_files_button.addEventListener('click', function () {
     }
 })
 
+rename_file_button.addEventListener('click', function (e) {
+    if (confirm('Sure?')) {
+        findByIdThenPerform(e, renameFile)
+        return false
+    }
+})
+
 delete_file_button.addEventListener('click', function (e) {
     if (confirm('Sure?')) {
-        deleteFile(e.target.dataset.id)
+        findByIdThenPerform(e, deleteFile)
         return false
     }
 })
