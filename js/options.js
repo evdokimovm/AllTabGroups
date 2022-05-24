@@ -1,7 +1,7 @@
 var list = document.querySelectorAll('.list')
 var file_list = document.querySelector('.files')
 var links_list = document.querySelector('.links')
-var selectElement = document.querySelector('#select_color')
+var select_group = document.querySelector('#select_group')
 
 var textarea = document.querySelector('textarea')
 var filename_input = document.querySelector('input[name=filename]')
@@ -67,16 +67,16 @@ function getEitherByColorOrTitle(label) {
 }
 
 function fillSelectBox() {
-    selectElement.options.length = 0
-    selectElement.add(new Option('All Tabs'))
+    select_group.options.length = 0
+    select_group.add(new Option('All Tabs'))
 
     chrome.windows.getCurrent(function (win) {
         chrome.tabGroups.query({ windowId: win.id }, function (groups) {
             for (var i = 0; i < groups.length; i++) {
                 if (groups[i].title) {
-                    selectElement.add(new Option(`${groups[i].color}${separator}${groups[i].title}`))
+                    select_group.add(new Option(`${groups[i].color}${separator}${groups[i].title}`))
                 } else {
-                    selectElement.add(new Option(`${groups[i].color}`))
+                    select_group.add(new Option(`${groups[i].color}`))
                 }
             }
         })
@@ -256,7 +256,7 @@ function readTabs() {
     })
 }
 
-selectElement.addEventListener('change', function (e) {
+select_group.addEventListener('change', function (e) {
     getTabsFromCertainGroup(e.target.value)
 })
 
