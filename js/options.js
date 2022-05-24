@@ -155,6 +155,8 @@ function showFiles() {
     file_list.innerHTML = ''
     chrome.storage.local.get('files', function (files) {
         var files = files.files
+        if (!files) return false
+
         for (var i = 0; i < files.length; i++) {
             var li_element = document.createElement('li')
 
