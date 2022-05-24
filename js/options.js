@@ -5,6 +5,7 @@ var select_group = document.querySelector('#select_group')
 
 var textarea = document.querySelector('textarea')
 var filename_input = document.querySelector('input[name=filename]')
+var ignore_pinned_checkbox = document.querySelector('input.ignore_pinned')
 
 var copy_button = document.querySelector('.copy')
 var save_button = document.querySelector('.save')
@@ -20,6 +21,8 @@ var export_all_files_button = document.querySelector('button.export_all_files')
 var possible_colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange']
 
 var separator = ' - '
+
+var query_options = { currentWindow: true }
 
 function getTabsFromCertainGroup(tab_type) {
     if (tab_type == "All Tabs") {
@@ -260,8 +263,8 @@ function generateURLTitlePairs(tabs) {
     return urls
 }
 
-function readTabs() {
-    chrome.tabs.query({ currentWindow: true }, function (tabs) {
+function readTabs(options = query_options) {
+    chrome.tabs.query(options, function (tabs) {
         textarea.value = generateURLTitlePairs(tabs)
         linkPreview()
         setHeight()
@@ -272,9 +275,16 @@ select_group.addEventListener('change', function (e) {
     getTabsFromCertainGroup(e.target.value)
 })
 
-readTabs()
-fillSelectBox()
-showFiles()
+chrome.storage.local.get('user_settings', function (settings) {
+    var flag = settings.user_settings?.ignore_pinned || false
+
+    ignore_pinned_checkbox.checked = flag
+    if (flag) query_options.pinned = false
+
+    fillSelectBox()
+    showFiles()
+})
+
 copy_button.addEventListener("click", copy)
 filename_input.value = getDate()
 
@@ -353,6 +363,16 @@ save_button.addEventListener('click', function () {
 
 textarea.addEventListener('input', function () {
     linkPreview()
+})
+
+ignore_pinned_checkbox.addEventListener('change', function () {
+    storageSave({ user_settings: { ignore_pinned: this.checked } })
+
+    if (ignore_pinned_checkbox.checked) {
+        query_options.pinned = !ignore_pinned_checkbox.checked
+    } else {
+        query_options = { currentWindow: true }
+    }
 })
 
 delete_files_button.addEventListener('click', function () {
