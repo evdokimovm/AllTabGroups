@@ -172,9 +172,9 @@ function showFiles() {
     })
 }
 
-function storageSave(files) {
-    chrome.storage.local.set({ 'files': files }, function () {
-        window.location.reload()
+function storageSave(options) {
+    chrome.storage.local.set(options, function () {
+        showFiles()
     })
 }
 
@@ -212,13 +212,13 @@ function readFile(e, files, index) {
 function renameFile(e, files, index) {
     files[index].name = filename_input.value
 
-    storageSave(files)
+    storageSave({ files: files })
 }
 
 function deleteFile(e, files, index) {
     files.splice(index, 1)
 
-    storageSave(files)
+    storageSave({ files: files })
 }
 
 function addFile(new_file) {
@@ -230,12 +230,12 @@ function addFile(new_file) {
             var files = []
             files.push(new_file)
         }
-        storageSave(files)
+        storageSave({ files: files })
     })
 }
 
 function clearAll() {
-    storageSave([])
+    storageSave({ files: [] })
 }
 
 function generateURLTitlePairs(tabs) {
@@ -338,7 +338,7 @@ export_all_files_button.addEventListener('click', function () {
 import_all_files_button.addEventListener('click', async function () {
     var json_cnt = await pickFile(props)
 
-    storageSave(json_cnt.files)
+    storageSave({ files: json_cnt.files })
 })
 
 save_button.addEventListener('click', function () {
