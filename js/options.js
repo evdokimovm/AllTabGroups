@@ -223,6 +223,16 @@ function deleteFile(e, files, index) {
     storageSave({ files: files })
 }
 
+function exportFile(e, files, index) {
+    var filename = files[index].name
+    var url = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(files[index]))))
+
+    chrome.downloads.download({
+        url: url,
+        filename: (filename.replaceAll(':', ' ')) + '.json'
+    })
+}
+
 function addFile(new_file) {
     chrome.storage.local.get('files', function (data) {
         if (data.files) {
@@ -298,24 +308,7 @@ async function pickFile(props) {
     return json_cnt
 }
 
-export_file_button.addEventListener('click', function (e) {
-    var _id = e.target.dataset.id
-    var _filename = filename_input.value
-    var url = ''
-
-    chrome.storage.local.get('files', (_storage) => {
-        for (var file of _storage.files) {
-            if (file.id == _id) {
-                url = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(file))))
-
-                chrome.downloads.download({
-                    url: url,
-                    filename: (_filename.replaceAll(':', ' ')) + '.json'
-                })
-            }
-        }
-    })
-})
+export_file_button.addEventListener('click', (e) => findByIdThenPerform(e, exportFile))
 
 import_file_button.addEventListener('click', async function () {
     var json_cnt = await pickFile(props)
