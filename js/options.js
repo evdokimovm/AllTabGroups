@@ -162,46 +162,63 @@ function addActiveClassOnOpenedFolder(e) {
     }
 }
 
-function showFiles() {
+async function showFiles() {
     file_list.innerHTML = ''
-    chrome.storage.local.get('files', function (files) {
-        var files = files.files
-        if (!files) return false
 
-        for (var i = 0; i < files.length; i++) {
-            var li_element = document.createElement('li')
+    var files = await storageGetAllFrom('files')
+    if (!files) return false
 
-            var a_element = document.createElement('a')
-            a_element.href = '#'
-            a_element.dataset.id = files[i].id
-            a_element.className = 'file'
-            a_element.innerHTML = "<h5>" + files[i].name + "</h5><span>" + files[i].time + "</span>"
+    for (var i = 0; i < files.length; i++) {
+        var li_element = document.createElement('li')
 
-            a_element.addEventListener('click', (e) => findByIdThenPerform(e, readFile))
+        var a_element = document.createElement('a')
+        a_element.href = '#'
+        a_element.dataset.id = files[i].id
+        a_element.className = 'file'
+        a_element.innerHTML = "<h5>" + files[i].name + "</h5><span>" + files[i].time + "</span>"
 
-            li_element.appendChild(a_element)
-            file_list.insertBefore(li_element, file_list.firstChild)
+        a_element.addEventListener('click', (e) => findByIdThenPerform(e, readFile))
+
+        li_element.appendChild(a_element)
+        file_list.insertBefore(li_element, file_list.firstChild)
+    }
+}
+
+async function storageSave(options) {
+    return new Promise((resolve, reject) => {
+        try {
+            chrome.storage.local.set(options, function (value) {
+                resolve()
+            })
+        } catch (err) {
+            reject(err)
         }
     })
 }
 
-function storageSave(options) {
-    chrome.storage.local.set(options, function () {
-        showFiles()
+async function storageGetAllFrom(collection) {
+    return new Promise((resolve, reject) => {
+        try {
+            chrome.storage.local.get(collection, function (value) {
+                resolve(value[collection])
+            })
+        } catch (err) {
+            reject(err)
+        }
     })
 }
 
-function findByIdThenPerform(e, callback) {
-    var id = e.target.dataset.id || e.target.parentNode.dataset.id
+async function findByIdThenPerform(e, callback) {
+    var id = e.target?.dataset.id || e.target?.parentNode.dataset.id || e
+    var files = await storageGetAllFrom('files')
 
-    chrome.storage.local.get('files', function (files) {
-        var files = files.files
-        for (var i = 0; i < files.length; i++) {
-            if (files[i].id == id) {
-                callback(e, files, i)
-            }
+    if (!files) return false
+
+    for (var i = 0; i < files.length; i++) {
+        if (files[i].id == id) {
+            return callback(e, files, i)
         }
-    })
+    }
 }
 
 function readFile(e, files, index) {
@@ -222,16 +239,18 @@ function readFile(e, files, index) {
     rename_file_button.dataset.id = id
 }
 
-function renameFile(e, files, index) {
+async function renameFile(e, files, index) {
     files[index].name = filename_input.value
 
-    storageSave({ files: files })
+    await storageSave({ files: files })
+    showFiles()
 }
 
-function deleteFile(e, files, index) {
+async function deleteFile(e, files, index) {
     files.splice(index, 1)
 
-    storageSave({ files: files })
+    await storageSave({ files: files })
+    showFiles()
 }
 
 function exportFile(e, files, index) {
@@ -244,21 +263,21 @@ function exportFile(e, files, index) {
     })
 }
 
-function addFile(new_file) {
-    chrome.storage.local.get('files', function (data) {
-        if (data.files) {
-            var files = data.files
-            files.push(new_file)
-        } else {
-            var files = []
-            files.push(new_file)
-        }
-        storageSave({ files: files })
-    })
+async function addFile(new_file) {
+    var files = await storageGetAllFrom('files')
+    if (files) {
+        files.push(new_file)
+    } else {
+        var files = []
+        files.push(new_file)
+    }
+    await storageSave({ files: files })
+    showFiles()
 }
 
-function clearAll() {
-    storageSave({ files: [] })
+async function clearAll() {
+    await storageSave({ files: [] })
+    showFiles()
 }
 
 function generateURLTitlePairs(tabs) {
@@ -333,25 +352,25 @@ import_file_button.addEventListener('click', async function () {
 
     addFile(json_cnt)
 
-    window.location.reload()
+    showFiles()
 })
 
-export_all_files_button.addEventListener('click', function () {
-    chrome.storage.local.get('files', function (items) {
-        var result = JSON.stringify(items)
+export_all_files_button.addEventListener('click', async function () {
+    var files = await storageGetAllFrom('files')
+    var result = JSON.stringify(files)
 
-        var url = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(result)))
-        chrome.downloads.download({
-            url: url,
-            filename: 'alltabs.json'
-        })
+    var url = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(result)))
+    chrome.downloads.download({
+        url: url,
+        filename: 'alltabs.json'
     })
 })
 
 import_all_files_button.addEventListener('click', async function () {
     var json_cnt = await pickFile(props)
 
-    storageSave({ files: json_cnt.files })
+    await storageSave({ files: json_cnt.files })
+    showFiles()
 })
 
 save_button.addEventListener('click', function () {
@@ -373,14 +392,16 @@ textarea.addEventListener('input', function () {
     linkPreview()
 })
 
-ignore_pinned_checkbox.addEventListener('change', function () {
-    storageSave({ user_settings: { ignore_pinned: this.checked } })
+ignore_pinned_checkbox.addEventListener('change', async function () {
+    await storageSave({ user_settings: { ignore_pinned: this.checked } })
 
     if (ignore_pinned_checkbox.checked) {
         query_options.pinned = !ignore_pinned_checkbox.checked
     } else {
         query_options = { currentWindow: true }
     }
+
+    readTabs()
 })
 
 delete_files_button.addEventListener('click', function () {
