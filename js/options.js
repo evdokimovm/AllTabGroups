@@ -127,11 +127,19 @@ function arrayFromTextarea() {
     return lines
 }
 
+function replaceTags(title) {
+    var test_if_tag = new RegExp('<.*?.|<.*?>|<\/.*?>')
+    if (test_if_tag.test(title)) {
+        title = title.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    }
+    return title
+}
+
 function linkPreview() {
     var links = ''
     var lines = arrayFromTextarea()
     for (var i = 0; i < lines.length; i += 2) {
-        links += "<li><a href='" + lines[i + 1] + "' target='_blank'><h5>" + lines[i] + "</h5><span>" + lines[i + 1] + "</span></a></li>"
+        links += "<li><a href='" + lines[i + 1] + "' target='_blank'><h5>" + replaceTags(lines[i]) + "</h5><span>" + lines[i + 1] + "</span></a></li>"
     }
     links_list.innerHTML = links
 }
