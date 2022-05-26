@@ -253,6 +253,10 @@ async function deleteFile(e, files, index) {
     showFiles()
 }
 
+function isExist() {
+    return true
+}
+
 function exportFile(e, files, index) {
     var filename = files[index].name
     var url = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(files[index]))))
@@ -349,6 +353,12 @@ export_file_button.addEventListener('click', (e) => findByIdThenPerform(e, expor
 
 import_file_button.addEventListener('click', async function () {
     var json_cnt = await pickFile(props)
+    var is_exist = await findByIdThenPerform(json_cnt.id, isExist)
+
+    if (is_exist) {
+        json_cnt.id = String(+ new Date())
+        json_cnt.time = getDate()
+    }
 
     addFile(json_cnt)
 
