@@ -395,7 +395,6 @@ save_button.addEventListener('click', function () {
         file_obj.name = filename_input.value
     }
     addFile(file_obj)
-    return false
 })
 
 textarea.addEventListener('input', function () {
@@ -405,12 +404,13 @@ textarea.addEventListener('input', function () {
 ignore_pinned_checkbox.addEventListener('change', async function () {
     await storageSave({ user_settings: { ignore_pinned: this.checked } })
 
-    if (ignore_pinned_checkbox.checked) {
-        query_options.pinned = !ignore_pinned_checkbox.checked
+    if (this.checked) {
+        query_options.pinned = !this.checked
     } else {
         query_options = { currentWindow: true }
     }
 
+    deleteFolderActiveClass()
     readTabs()
 })
 
