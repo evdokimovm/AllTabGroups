@@ -11,6 +11,7 @@ var copy_button = document.querySelector('.copy')
 var save_button = document.querySelector('.save')
 var rename_file_button = document.querySelector('.rename')
 var opentabs_button = document.querySelector('button.opentabs')
+var merge_files_button = document.querySelector('.merge_files')
 var export_file_button = document.querySelector('.export_file')
 var delete_file_button = document.querySelector('.delete_file')
 var delete_files_button = document.querySelector('.delete_files')
@@ -18,11 +19,11 @@ var import_file_button = document.querySelector('button.import_file')
 var import_all_files_button = document.querySelector('button.import_all_files')
 var export_all_files_button = document.querySelector('button.export_all_files')
 
-var possible_colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange']
-
+var file_ids = []
 var separator = ' - '
-
+var files_selected = 0
 var query_options = { currentWindow: true }
+var possible_colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange']
 
 function getTabsFromCertainGroup(tab_type) {
     if (tab_type == "All Tabs") {
@@ -144,17 +145,19 @@ function linkPreview() {
     links_list.innerHTML = links
 }
 
-function deleteFolderActiveClass() {
-    var active_folder = document.querySelector('a.active')
+function deleteFolderActiveClass(n_times) {
+    for (var i = 0; i < n_times; i++) {
+        var active_folder = document.querySelector('a.active')
 
-    if (active_folder) {
-        active_folder.classList.remove('active')
+        if (active_folder) {
+            active_folder.classList.remove('active')
+        }
     }
+
+    files_selected = 1
 }
 
 function addActiveClassOnOpenedFolder(e) {
-    deleteFolderActiveClass()
-
     if (e.target.tagName == 'A') {
         e.target.classList.add('active')
     } else {
@@ -209,6 +212,8 @@ async function storageGetAllFrom(collection) {
 }
 
 async function findByIdThenPerform(e, callback) {
+    if (e.ctrlKey) e.preventDefault()
+
     var id = e.target?.dataset.id || e.target?.parentNode.dataset.id || e
     var files = await storageGetAllFrom('files')
 
@@ -221,15 +226,18 @@ async function findByIdThenPerform(e, callback) {
     }
 }
 
-function readFile(e, files, index) {
-    var id = e.target.dataset.id || e.target.parentNode.dataset.id
+function activateButtons(e, id) {
+    files_selected += 1
 
-    addActiveClassOnOpenedFolder(e)
+    if (!e.ctrlKey) {
+        deleteFolderActiveClass(files_selected)
+        file_ids.length = 0
+        file_ids.push(id)
+    }
 
-    textarea.value = files[index].links
-    filename_input.value = files[index].name
-
-    linkPreview()
+    if (!file_ids.includes(id)) {
+        file_ids.push(id)
+    }
 
     export_file_button.dataset.id = id
     export_file_button.disabled = false
@@ -237,6 +245,19 @@ function readFile(e, files, index) {
     delete_file_button.dataset.id = id
     rename_file_button.disabled = false
     rename_file_button.dataset.id = id
+}
+
+function readFile(e, files, index) {
+    var id = e.target.dataset.id || e.target.parentNode.dataset.id
+
+    activateButtons(e, id)
+
+    addActiveClassOnOpenedFolder(e)
+
+    textarea.value = files[index].links
+    filename_input.value = files[index].name
+
+    linkPreview()
 }
 
 async function renameFile(e, files, index) {
@@ -255,6 +276,10 @@ async function deleteFile(e, files, index) {
 
 function isExist() {
     return true
+}
+
+function getFileContents(e, files, index) {
+    return files[index].links
 }
 
 function exportFile(e, files, index) {
@@ -292,6 +317,21 @@ function generateURLTitlePairs(tabs) {
         }
     }
     return urls
+}
+
+function buildFileObject(links = textarea.value) {
+    var file_obj = {}
+    file_obj.id = String(+ new Date())
+    file_obj.time = getDate()
+    file_obj.links = links
+
+    if (!filename_input.value) {
+        file_obj.name = file_obj.time
+    } else {
+        file_obj.name = filename_input.value
+    }
+
+    return file_obj
 }
 
 function readTabs(options = query_options) {
@@ -384,17 +424,8 @@ import_all_files_button.addEventListener('click', async function () {
 })
 
 save_button.addEventListener('click', function () {
-    var file_obj = {}
-    file_obj.id = String(+ new Date())
-    file_obj.time = getDate()
-    file_obj.links = textarea.value
-
-    if (!filename_input.value) {
-        file_obj.name = file_obj.time
-    } else {
-        file_obj.name = filename_input.value
-    }
-    addFile(file_obj)
+    var new_file = buildFileObject()
+    addFile(new_file)
 })
 
 textarea.addEventListener('input', function () {
@@ -410,8 +441,25 @@ ignore_pinned_checkbox.addEventListener('change', async function () {
         query_options = { currentWindow: true }
     }
 
-    deleteFolderActiveClass()
+    deleteFolderActiveClass(files_selected)
     readTabs()
+})
+
+merge_files_button.addEventListener('click', async function () {
+    if (file_ids.length < 2) {
+        alert('Select multiple files with pressed CTRL then press MERGE')
+
+        return false
+    }
+
+    var links = ''
+
+    for (var i = 0; i < file_ids.length; i++) {
+        links += await findByIdThenPerform(file_ids[i], getFileContents)
+    }
+
+    var new_file = buildFileObject(links)
+    addFile(new_file)
 })
 
 delete_files_button.addEventListener('click', function () {
