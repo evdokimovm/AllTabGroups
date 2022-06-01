@@ -219,11 +219,9 @@ async function findByIdThenPerform(e, callback) {
 
     if (!files) return false
 
-    for (var i = 0; i < files.length; i++) {
-        if (files[i].id == id) {
-            return callback(e, files, i)
-        }
-    }
+    var index = files.findIndex(file => file.id == id)
+
+    return callback(e, files, index)
 }
 
 function activateButtons(e, id) {
@@ -241,10 +239,19 @@ function activateButtons(e, id) {
 
     export_file_button.dataset.id = id
     export_file_button.disabled = false
-    delete_file_button.style.display = 'inline-block'
-    delete_file_button.dataset.id = id
+    delete_file_button.disabled = false
     rename_file_button.disabled = false
     rename_file_button.dataset.id = id
+}
+
+function deactivateButtons() {
+    file_ids.length = 0
+
+    rename_file_button.dataset.id = ''
+    rename_file_button.disabled = true
+    delete_file_button.disabled = true
+    export_file_button.dataset.id = ''
+    export_file_button.disabled = true
 }
 
 function readFile(e, files, index) {
@@ -443,6 +450,7 @@ ignore_pinned_checkbox.addEventListener('change', async function () {
 
     deleteFolderActiveClass(files_selected)
     readTabs()
+    deactivateButtons()
 })
 
 merge_files_button.addEventListener('click', async function () {
@@ -460,24 +468,30 @@ merge_files_button.addEventListener('click', async function () {
 
     var new_file = buildFileObject(links)
     addFile(new_file)
+
+    deactivateButtons()
 })
 
 delete_files_button.addEventListener('click', function () {
     if (confirm('Sure?')) {
         clearAll()
+        deactivateButtons()
     }
 })
 
 rename_file_button.addEventListener('click', function (e) {
     if (confirm('Sure?')) {
         findByIdThenPerform(e, renameFile)
-        return false
+        deactivateButtons()
     }
 })
 
-delete_file_button.addEventListener('click', function (e) {
+delete_file_button.addEventListener('click', async function () {
     if (confirm('Sure?')) {
-        findByIdThenPerform(e, deleteFile)
-        return false
+        for (var i = 0; i < file_ids.length; i++) {
+            await findByIdThenPerform(file_ids[i], deleteFile)
+        }
+
+        deactivateButtons()
     }
 })
