@@ -426,7 +426,7 @@ export_all_files_button.addEventListener('click', async function () {
 import_all_files_button.addEventListener('click', async function () {
     var json_cnt = await pickFile(props)
 
-    await storageSave({ files: json_cnt.files })
+    await storageSave({ files: json_cnt })
     showFiles()
 })
 
