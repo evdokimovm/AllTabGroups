@@ -157,11 +157,22 @@ function deleteFolderActiveClass(n_times) {
     files_selected = 1
 }
 
-function addActiveClassOnOpenedFolder(e) {
-    if (e.target.tagName == 'A') {
-        e.target.classList.add('active')
+function toggleActiveness(e) {
+    var folder = e.target.tagName == 'A' ? e.target : e.target.parentNode
+    var folder_id = folder.dataset.id
+
+    if (!e.ctrlKey) {
+        deleteFolderActiveClass(files_selected)
+        file_ids.length = 0
+        file_ids.push(folder_id)
+    }
+
+    if (e.ctrlKey && folder.classList.contains('active')) {
+        folder.classList.remove('active')
+        files_selected -= 1
+        file_ids = file_ids.filter(id => id != folder_id)
     } else {
-        e.target.parentNode.classList.add('active')
+        folder.classList.add('active')
     }
 }
 
@@ -227,12 +238,6 @@ async function findByIdThenPerform(e, callback) {
 function activateButtons(e, id) {
     files_selected += 1
 
-    if (!e.ctrlKey) {
-        deleteFolderActiveClass(files_selected)
-        file_ids.length = 0
-        file_ids.push(id)
-    }
-
     if (!file_ids.includes(id)) {
         file_ids.push(id)
     }
@@ -259,7 +264,7 @@ function readFile(e, files, index) {
 
     activateButtons(e, id)
 
-    addActiveClassOnOpenedFolder(e)
+    toggleActiveness(e)
 
     textarea.value = files[index].links
     filename_input.value = files[index].name
