@@ -37,6 +37,7 @@ function getBy(option) {
     chrome.tabGroups.query(option, function (groups) {
         chrome.tabs.query({ groupId: groups[0].id }, function (tabs) {
             textarea.value = generateURLTitlePairs(tabs)
+            filename_input.value = getDate()
             linkPreview()
         })
     })
@@ -173,6 +174,11 @@ function toggleActiveness(e) {
         file_ids = file_ids.filter(id => id != folder_id)
     } else {
         folder.classList.add('active')
+    }
+
+    if (!file_ids.length) {
+        deactivateButtons()
+        readTabs()
     }
 }
 
@@ -349,6 +355,7 @@ function buildFileObject(links = textarea.value) {
 function readTabs(options = query_options) {
     chrome.tabs.query(options, function (tabs) {
         textarea.value = generateURLTitlePairs(tabs)
+        filename_input.value = getDate()
         linkPreview()
         setHeight()
     })
@@ -369,7 +376,6 @@ chrome.storage.local.get('user_settings', function (settings) {
 })
 
 copy_button.addEventListener("click", copy)
-filename_input.value = getDate()
 
 opentabs_button.addEventListener('click', function () {
     var lines = arrayFromTextarea()
