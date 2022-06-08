@@ -238,7 +238,9 @@ async function findByIdThenPerform(e, callback) {
 
     var index = files.findIndex(file => file.id == id)
 
-    return callback(e, files, index)
+    if (index > -1) {
+        return callback(e, files, index)
+    }
 }
 
 function activateButtons(e, id) {
