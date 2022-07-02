@@ -21,7 +21,6 @@ var export_all_files_button = document.querySelector('button.export_all_files')
 
 var file_ids = []
 var separator = ' - '
-var files_selected = 0
 var query_options = { currentWindow: true }
 var possible_colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange']
 
@@ -147,7 +146,7 @@ function linkPreview() {
 }
 
 function deleteFolderActiveClass(n_times) {
-    for (var i = 0; i < n_times; i++) {
+    for (var i = 0; i <= n_times; i++) {
         var active_folder = document.querySelector('a.active')
 
         if (active_folder) {
@@ -155,7 +154,7 @@ function deleteFolderActiveClass(n_times) {
         }
     }
 
-    files_selected = 1
+    file_ids.length = 0
 }
 
 function toggleActiveness(e) {
@@ -163,14 +162,13 @@ function toggleActiveness(e) {
     var folder_id = folder.dataset.id
 
     if (!e.ctrlKey) {
-        deleteFolderActiveClass(files_selected)
+        deleteFolderActiveClass(file_ids.length)
         file_ids.length = 0
         file_ids.push(folder_id)
     }
 
     if (e.ctrlKey && folder.classList.contains('active')) {
         folder.classList.remove('active')
-        files_selected -= 1
         file_ids = file_ids.filter(id => id != folder_id)
     } else {
         folder.classList.add('active')
@@ -244,8 +242,6 @@ async function findByIdThenPerform(e, callback) {
 }
 
 function activateButtons(e, id) {
-    files_selected += 1
-
     if (!file_ids.includes(id)) {
         file_ids.push(id)
     }
@@ -461,7 +457,7 @@ ignore_pinned_checkbox.addEventListener('change', async function () {
         query_options = { currentWindow: true }
     }
 
-    deleteFolderActiveClass(files_selected)
+    deleteFolderActiveClass(file_ids.length)
     readTabs()
     deactivateButtons()
 })
