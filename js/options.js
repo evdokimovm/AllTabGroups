@@ -457,6 +457,7 @@ ignore_pinned_checkbox.addEventListener('change', async function () {
         query_options = { currentWindow: true }
     }
 
+    select_group.selectedIndex = 0
     deleteFolderActiveClass(file_ids.length)
     readTabs()
     deactivateButtons()
