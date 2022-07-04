@@ -183,7 +183,7 @@ function toggleActiveness(e) {
 async function showFiles() {
     file_list.innerHTML = ''
 
-    var files = await storageGetAllFrom('files')
+    var files = await promiseWrapper('files', storageGetAllFrom)
     if (!files) return false
 
     for (var i = 0; i < files.length; i++) {
@@ -202,35 +202,29 @@ async function showFiles() {
     }
 }
 
-async function storageSave(options) {
+async function promiseWrapper(options, callback) {
     return new Promise((resolve, reject) => {
         try {
-            chrome.storage.local.set(options, function (value) {
-                resolve()
-            })
+            callback(options, resolve)
         } catch (err) {
             reject(err)
         }
     })
 }
 
-async function storageGetAllFrom(collection) {
-    return new Promise((resolve, reject) => {
-        try {
-            chrome.storage.local.get(collection, function (value) {
-                resolve(value[collection])
-            })
-        } catch (err) {
-            reject(err)
-        }
-    })
+function storageSave(options, resolve) {
+    chrome.storage.local.set(options, () => resolve())
+}
+
+function storageGetAllFrom(collection, resolve) {
+    chrome.storage.local.get(collection, (data) => resolve(data[collection]))
 }
 
 async function findByIdThenPerform(e, callback) {
     if (e.ctrlKey) e.preventDefault()
 
     var id = e.target?.dataset.id || e.target?.parentNode.dataset.id || e
-    var files = await storageGetAllFrom('files')
+    var files = await promiseWrapper('files', storageGetAllFrom)
 
     if (!files) return false
 
@@ -272,14 +266,14 @@ function readFile(e, files, index) {
 async function renameFile(e, files, index) {
     files[index].name = filename_input.value
 
-    await storageSave({ files: files })
+    await promiseWrapper({ files: files }, storageSave)
     showFiles()
 }
 
 async function deleteFile(e, files, index) {
     files.splice(index, 1)
 
-    await storageSave({ files: files })
+    await promiseWrapper({ files: files }, storageSave)
     showFiles()
 }
 
@@ -302,19 +296,19 @@ function exportFile(e, files, index) {
 }
 
 async function addFile(new_file) {
-    var files = await storageGetAllFrom('files')
+    var files = await promiseWrapper('files', storageGetAllFrom)
     if (files) {
         files.push(new_file)
     } else {
         var files = []
         files.push(new_file)
     }
-    await storageSave({ files: files })
+    await promiseWrapper({ files: files }, storageSave)
     showFiles()
 }
 
 async function clearAll() {
-    await storageSave({ files: [] })
+    await promiseWrapper({ files: [] }, storageSave)
     showFiles()
 }
 
@@ -415,7 +409,7 @@ import_file_button.addEventListener('click', async function () {
 })
 
 export_all_files_button.addEventListener('click', async function () {
-    var files = await storageGetAllFrom('files')
+    var files = await promiseWrapper('files', storageGetAllFrom)
     var result = JSON.stringify(files)
 
     var url = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(result)))
@@ -428,7 +422,7 @@ export_all_files_button.addEventListener('click', async function () {
 import_all_files_button.addEventListener('click', async function () {
     var json_cnt = await pickFile(props)
 
-    await storageSave({ files: json_cnt })
+    await promiseWrapper({ files: json_cnt }, storageSave)
     showFiles()
 })
 
@@ -442,7 +436,7 @@ textarea.addEventListener('input', function () {
 })
 
 ignore_pinned_checkbox.addEventListener('change', async function () {
-    await storageSave({ user_settings: { ignore_pinned: this.checked } })
+    await promiseWrapper({ user_settings: { ignore_pinned: this.checked } }, storageSave)
 
     if (this.checked) {
         query_options.pinned = !this.checked
