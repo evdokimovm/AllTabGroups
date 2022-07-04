@@ -175,7 +175,7 @@ function toggleActiveness(e) {
     }
 
     if (!file_ids.length) {
-        deactivateButtons()
+        switchButtonsActiveness(false)
         readTabs()
     }
 }
@@ -241,32 +241,25 @@ async function findByIdThenPerform(e, callback) {
     }
 }
 
-function activateButtons(e, id) {
-    if (!file_ids.includes(id)) {
+function switchButtonsActiveness(e = null, id = null, flag) {
+    if (!flag) file_ids.length = 0
+
+    if (!file_ids.includes(id) && flag) {
         file_ids.push(id)
     }
 
-    export_file_button.dataset.id = id
-    export_file_button.disabled = false
-    delete_file_button.disabled = false
-    rename_file_button.disabled = false
-    rename_file_button.dataset.id = id
-}
+    export_file_button.disabled = flag ? false : true
+    delete_file_button.disabled = flag ? false : true
+    rename_file_button.disabled = flag ? false : true
 
-function deactivateButtons() {
-    file_ids.length = 0
-
-    rename_file_button.dataset.id = ''
-    rename_file_button.disabled = true
-    delete_file_button.disabled = true
-    export_file_button.dataset.id = ''
-    export_file_button.disabled = true
+    export_file_button.dataset.id = flag ? id : ''
+    rename_file_button.dataset.id = flag ? id : ''
 }
 
 function readFile(e, files, index) {
     var id = e.target.dataset.id || e.target.parentNode.dataset.id
 
-    activateButtons(e, id)
+    switchButtonsActiveness(e, id, true)
 
     toggleActiveness(e)
 
@@ -460,7 +453,7 @@ ignore_pinned_checkbox.addEventListener('change', async function () {
     select_group.selectedIndex = 0
     deleteFolderActiveClass(file_ids.length)
     readTabs()
-    deactivateButtons()
+    switchButtonsActiveness(false)
 })
 
 merge_files_button.addEventListener('click', async function () {
@@ -479,20 +472,20 @@ merge_files_button.addEventListener('click', async function () {
     var new_file = buildFileObject(links)
     addFile(new_file)
 
-    deactivateButtons()
+    switchButtonsActiveness(false)
 })
 
 delete_files_button.addEventListener('click', function () {
     if (confirm('Sure?')) {
         clearAll()
-        deactivateButtons()
+        switchButtonsActiveness(false)
     }
 })
 
 rename_file_button.addEventListener('click', function (e) {
     if (confirm('Sure?')) {
         findByIdThenPerform(e, renameFile)
-        deactivateButtons()
+        switchButtonsActiveness(false)
     }
 })
 
@@ -502,6 +495,6 @@ delete_file_button.addEventListener('click', async function () {
             await findByIdThenPerform(file_ids[i], deleteFile)
         }
 
-        deactivateButtons()
+        switchButtonsActiveness(false)
     }
 })
