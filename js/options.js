@@ -163,7 +163,6 @@ function toggleActiveness(e) {
 
     if (!e.ctrlKey) {
         deleteFolderActiveClass(file_ids.length)
-        file_ids.length = 0
         file_ids.push(folder_id)
     }
 
@@ -235,16 +234,16 @@ async function findByIdThenPerform(e, callback) {
     }
 }
 
-function switchButtonsActiveness(e = null, id = null, flag) {
+function switchButtonsActiveness(id = null, flag) {
     if (!flag) file_ids.length = 0
 
     if (!file_ids.includes(id) && flag) {
         file_ids.push(id)
     }
 
-    export_file_button.disabled = flag ? false : true
-    delete_file_button.disabled = flag ? false : true
-    rename_file_button.disabled = flag ? false : true
+    export_file_button.disabled = !flag
+    delete_file_button.disabled = !flag
+    rename_file_button.disabled = !flag
 
     export_file_button.dataset.id = flag ? id : ''
     rename_file_button.dataset.id = flag ? id : ''
@@ -253,7 +252,7 @@ function switchButtonsActiveness(e = null, id = null, flag) {
 function readFile(e, files, index) {
     var id = e.target.dataset.id || e.target.parentNode.dataset.id
 
-    switchButtonsActiveness(e, id, true)
+    switchButtonsActiveness(id, true)
 
     toggleActiveness(e)
 
