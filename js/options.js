@@ -29,6 +29,10 @@ var possible_colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple
 
 function getTabsFromCertainGroup(tab_type) {
     if (tab_type == "All Tabs") {
+        delete query_options.groupId
+        readTabs()
+    } else if (tab_type == "Not Grouped") {
+        query_options.groupId = -1
         readTabs()
     } else {
         getEitherByColorOrTitle(tab_type)
@@ -78,6 +82,7 @@ async function fillSelectBox(flag) {
 
     select_group.options.length = 0
     select_group.add(new Option('All Tabs'))
+    select_group.add(new Option('Not Grouped'))
 
     if (flag) {
         windows = await chrome.windows.getAll()
