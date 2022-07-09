@@ -77,18 +77,24 @@ function getEitherByColorOrTitle(label) {
     }
 }
 
-async function fillSelectBox(flag) {
+async function getWindows(flag) {
     var windows = []
-
-    select_group.options.length = 0
-    select_group.add(new Option('All Tabs'))
-    select_group.add(new Option('Not Grouped'))
 
     if (flag) {
         windows = await chrome.windows.getAll()
     } else {
         windows.push(await chrome.windows.getCurrent())
     }
+
+    return windows
+}
+
+async function fillSelectBox(flag) {
+    var windows = getWindows(flag)
+
+    select_group.options.length = 0
+    select_group.add(new Option('All Tabs'))
+    select_group.add(new Option('Not Grouped'))
 
     for (var i = 0; i < windows.length; i++) {
         chrome.tabGroups.query({ windowId: windows[i].id }, function (groups) {
