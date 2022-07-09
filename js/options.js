@@ -4,7 +4,9 @@ var links_list = document.querySelector('.links')
 var select_group = document.querySelector('#select_group')
 
 var textarea = document.querySelector('textarea')
+var settings = document.querySelectorAll('input.settings')
 var filename_input = document.querySelector('input[name=filename]')
+var all_windows_checkbox = document.querySelector('input.all_windows')
 var ignore_pinned_checkbox = document.querySelector('input.ignore_pinned')
 
 var copy_button = document.querySelector('.copy')
@@ -22,6 +24,7 @@ var export_all_files_button = document.querySelector('button.export_all_files')
 var file_ids = []
 var separator = ' - '
 var query_options = { currentWindow: true }
+var default_settings = { all_instances: false, ignore_pinned: false }
 var possible_colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange']
 
 function getTabsFromCertainGroup(tab_type) {
@@ -70,12 +73,20 @@ function getEitherByColorOrTitle(label) {
     }
 }
 
-function fillSelectBox() {
+async function fillSelectBox(flag) {
+    var windows = []
+
     select_group.options.length = 0
     select_group.add(new Option('All Tabs'))
 
-    chrome.windows.getCurrent(function (win) {
-        chrome.tabGroups.query({ windowId: win.id }, function (groups) {
+    if (flag) {
+        windows = await chrome.windows.getAll()
+    } else {
+        windows.push(await chrome.windows.getCurrent())
+    }
+
+    for (var i = 0; i < windows.length; i++) {
+        chrome.tabGroups.query({ windowId: windows[i].id }, function (groups) {
             for (var i = 0; i < groups.length; i++) {
                 if (groups[i].title) {
                     select_group.add(new Option(`${groups[i].color}${separator}${groups[i].title}`))
@@ -84,7 +95,7 @@ function fillSelectBox() {
                 }
             }
         })
-    })
+    }
 
     getTabsFromCertainGroup("All Tabs")
 }
@@ -349,15 +360,25 @@ select_group.addEventListener('change', function (e) {
     getTabsFromCertainGroup(e.target.value)
 })
 
-chrome.storage.local.get('user_settings', function (settings) {
-    var flag = settings.user_settings?.ignore_pinned || false
+async function run() {
+    var current_settings = await promiseWrapper('user_settings', storageGetAllFrom)
 
-    ignore_pinned_checkbox.checked = flag
-    if (flag) query_options.pinned = false
+    if (!current_settings) {
+        current_settings = default_settings
+        await promiseWrapper({ user_settings: default_settings }, storageSave)
+    }
 
-    fillSelectBox()
+    ignore_pinned_checkbox.checked = current_settings.ignore_pinned
+    all_windows_checkbox.checked = current_settings.all_instances
+
+    if (current_settings.ignore_pinned) query_options.pinned = false
+    if (current_settings.all_instances) delete query_options.currentWindow
+
+    fillSelectBox(current_settings.all_instances)
     showFiles()
-})
+}
+
+run()
 
 copy_button.addEventListener("click", copy)
 
@@ -434,20 +455,34 @@ textarea.addEventListener('input', function () {
     linkPreview()
 })
 
-ignore_pinned_checkbox.addEventListener('change', async function () {
-    await promiseWrapper({ user_settings: { ignore_pinned: this.checked } }, storageSave)
+async function composeSettingsObject() {
+    var current_settings = await promiseWrapper('user_settings', storageGetAllFrom)
 
-    if (this.checked) {
-        query_options.pinned = !this.checked
-    } else {
-        query_options = { currentWindow: true }
+    switch (this.dataset.type) {
+        case 'pinned':
+            current_settings.ignore_pinned = this.checked
+            this.checked ? query_options.pinned = false : delete query_options.pinned
+            break
+
+        case 'windows':
+            current_settings.all_instances = this.checked
+            this.checked ? delete query_options.currentWindow : query_options.currentWindow = true
+            break
+
+        default:
+            break
     }
 
     select_group.selectedIndex = 0
     deleteFolderActiveClass(file_ids.length)
-    readTabs()
+    fillSelectBox(current_settings.all_instances)
     switchButtonsActiveness(false)
-})
+
+    await promiseWrapper({ user_settings: current_settings }, storageSave)
+}
+
+ignore_pinned_checkbox.addEventListener('change', composeSettingsObject)
+all_windows_checkbox.addEventListener('change', composeSettingsObject)
 
 merge_files_button.addEventListener('click', async function () {
     if (file_ids.length < 2) {
