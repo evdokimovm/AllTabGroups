@@ -4,7 +4,6 @@ var links_list = document.querySelector('.links')
 var select_group = document.querySelector('#select_group')
 
 var textarea = document.querySelector('textarea')
-var settings = document.querySelectorAll('input.settings')
 var filename_input = document.querySelector('input[name=filename]')
 var all_windows_checkbox = document.querySelector('input.all_windows')
 var ignore_pinned_checkbox = document.querySelector('input.ignore_pinned')
@@ -77,36 +76,24 @@ function getEitherByColorOrTitle(label) {
     }
 }
 
-async function getWindows(flag) {
-    var windows = []
-
-    if (flag) {
-        windows = await chrome.windows.getAll()
-    } else {
-        windows.push(await chrome.windows.getCurrent())
-    }
-
-    return windows
-}
-
-async function fillSelectBox(flag) {
-    var windows = await getWindows(flag)
+async function fillSelectBox() {
+    var window_data = await chrome.windows.getCurrent()
+    var settings = await promiseWrapper('user_settings', storageGetAllFrom)
+    var windows = settings.all_instances ? {} : { windowId: window_data.id }
 
     select_group.options.length = 0
     select_group.add(new Option('All Tabs'))
     select_group.add(new Option('Not Grouped'))
 
-    for (var i = 0; i < windows.length; i++) {
-        chrome.tabGroups.query({ windowId: windows[i].id }, function (groups) {
-            for (var i = 0; i < groups.length; i++) {
-                if (groups[i].title) {
-                    select_group.add(new Option(`${groups[i].color}${separator}${groups[i].title}`))
-                } else {
-                    select_group.add(new Option(`${groups[i].color}`))
-                }
+    chrome.tabGroups.query(windows, function (groups) {
+        for (var i = 0; i < groups.length; i++) {
+            if (groups[i].title) {
+                select_group.add(new Option(`${groups[i].color}${separator}${groups[i].title}`))
+            } else {
+                select_group.add(new Option(`${groups[i].color}`))
             }
-        })
-    }
+        }
+    })
 
     getTabsFromCertainGroup("All Tabs")
 }
@@ -372,20 +359,20 @@ select_group.addEventListener('change', function (e) {
 })
 
 async function run() {
-    var current_settings = await promiseWrapper('user_settings', storageGetAllFrom)
+    var settings = await promiseWrapper('user_settings', storageGetAllFrom)
 
-    if (!current_settings) {
-        current_settings = default_settings
+    if (!settings) {
+        settings = default_settings
         await promiseWrapper({ user_settings: default_settings }, storageSave)
     }
 
-    ignore_pinned_checkbox.checked = current_settings.ignore_pinned
-    all_windows_checkbox.checked = current_settings.all_instances
+    ignore_pinned_checkbox.checked = settings.ignore_pinned
+    all_windows_checkbox.checked = settings.all_instances
 
-    if (current_settings.ignore_pinned) query_options.pinned = false
-    if (current_settings.all_instances) delete query_options.currentWindow
+    if (settings.ignore_pinned) query_options.pinned = false
+    if (settings.all_instances) delete query_options.currentWindow
 
-    fillSelectBox(current_settings.all_instances)
+    fillSelectBox()
     showFiles()
 }
 
@@ -467,16 +454,16 @@ textarea.addEventListener('input', function () {
 })
 
 async function composeSettingsObject() {
-    var current_settings = await promiseWrapper('user_settings', storageGetAllFrom)
+    var settings = await promiseWrapper('user_settings', storageGetAllFrom)
 
     switch (this.dataset.type) {
         case 'pinned':
-            current_settings.ignore_pinned = this.checked
+            settings.ignore_pinned = this.checked
             this.checked ? query_options.pinned = false : delete query_options.pinned
             break
 
         case 'windows':
-            current_settings.all_instances = this.checked
+            settings.all_instances = this.checked
             this.checked ? delete query_options.currentWindow : query_options.currentWindow = true
             break
 
@@ -486,10 +473,10 @@ async function composeSettingsObject() {
 
     select_group.selectedIndex = 0
     deleteFolderActiveClass(file_ids.length)
-    fillSelectBox(current_settings.all_instances)
+    fillSelectBox()
     switchButtonsActiveness(false)
 
-    await promiseWrapper({ user_settings: current_settings }, storageSave)
+    await promiseWrapper({ user_settings: settings }, storageSave)
 }
 
 ignore_pinned_checkbox.addEventListener('change', composeSettingsObject)
