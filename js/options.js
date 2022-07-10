@@ -90,7 +90,7 @@ async function getWindows(flag) {
 }
 
 async function fillSelectBox(flag) {
-    var windows = getWindows(flag)
+    var windows = await getWindows(flag)
 
     select_group.options.length = 0
     select_group.add(new Option('All Tabs'))
