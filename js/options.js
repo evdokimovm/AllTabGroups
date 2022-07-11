@@ -21,59 +21,53 @@ var import_all_files_button = document.querySelector('button.import_all_files')
 var export_all_files_button = document.querySelector('button.export_all_files')
 
 var file_ids = []
-var separator = ' - '
 var query_options = { currentWindow: true }
 var default_settings = { all_instances: false, ignore_pinned: false }
 var possible_colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange']
 
-function getTabsFromCertainGroup(tab_type) {
-    if (tab_type == "All Tabs") {
-        delete query_options.groupId
-        readTabs()
-    } else if (tab_type == "Not Grouped") {
-        query_options.groupId = -1
-        readTabs()
-    } else {
-        getEitherByColorOrTitle(tab_type)
+function getTabsFromCertainGroup(tab_type, data = null) {
+    switch (tab_type) {
+        case "All Tabs":
+            delete query_options.groupId
+            getBy()
+            break
+
+        case "Not Grouped":
+            query_options.groupId = -1
+            getBy()
+            break
+
+        default:
+            getBy({ groupId: +data.group_id })
+            break
     }
 }
 
-function getBy(option) {
-    chrome.tabGroups.query(option, function (groups) {
-        chrome.tabs.query({ groupId: groups[0].id }, function (tabs) {
-            textarea.value = generateURLTitlePairs(tabs)
-            filename_input.value = getDate()
-            linkPreview()
-        })
+function getBy(props = query_options) {
+    chrome.tabs.query(props, function (tabs) {
+        textarea.value = generateURLTitlePairs(tabs)
+        linkPreview()
+        filename_input.value = getDate()
+        setHeight()
     })
 }
 
-function splitLabel(label) {
-    var color = ''
-    var title = ''
+function createOption(group) {
+    var option = null
 
-    if (label.includes(separator)) {
-        color = label.substring(0, label.indexOf(separator))
-        title = label.substring(label.indexOf(separator) + separator.length)
+    if (group.title) {
+        var text = unescape(`${group.color} - ${group.title}`.replace(/ /g, '%A0'))
+        option = new Option(text)
     } else {
-        color = label
-        title = ''
+        option = new Option(`${group.color}`)
     }
 
-    return {
-        color: color,
-        title: title
-    }
-}
+    option.dataset.group_id = group.id
+    option.dataset.color = group.color
+    option.dataset.title = group.title
+    option.dataset.win_id = group.windowId
 
-function getEitherByColorOrTitle(label) {
-    var { color, title } = splitLabel(label)
-
-    if (possible_colors.includes(color) && title) {
-        getBy({ color: color, title: title })
-    } else {
-        getBy({ color: color, title: title })
-    }
+    return option
 }
 
 async function fillSelectBox() {
@@ -87,11 +81,7 @@ async function fillSelectBox() {
 
     chrome.tabGroups.query(windows, function (groups) {
         for (var i = 0; i < groups.length; i++) {
-            if (groups[i].title) {
-                select_group.add(new Option(`${groups[i].color}${separator}${groups[i].title}`))
-            } else {
-                select_group.add(new Option(`${groups[i].color}`))
-            }
+            select_group.add(createOption(groups[i]))
         }
     })
 
@@ -184,7 +174,7 @@ function toggleActiveness(e) {
 
     if (!file_ids.length) {
         switchButtonsActiveness(false)
-        readTabs()
+        getBy()
     }
 }
 
@@ -345,17 +335,8 @@ function buildFileObject(links = textarea.value) {
     return file_obj
 }
 
-function readTabs(options = query_options) {
-    chrome.tabs.query(options, function (tabs) {
-        textarea.value = generateURLTitlePairs(tabs)
-        filename_input.value = getDate()
-        linkPreview()
-        setHeight()
-    })
-}
-
-select_group.addEventListener('change', function (e) {
-    getTabsFromCertainGroup(e.target.value)
+select_group.addEventListener('change', function () {
+    getTabsFromCertainGroup(this.value, this[this.selectedIndex].dataset)
 })
 
 async function run() {
