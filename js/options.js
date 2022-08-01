@@ -23,7 +23,6 @@ var export_all_files_button = document.querySelector('button.export_all_files')
 var file_ids = []
 var query_options = { currentWindow: true }
 var default_settings = { all_instances: false, ignore_pinned: false }
-var possible_colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange']
 
 function getTabsFromCertainGroup(tab_type, data = null) {
     switch (tab_type) {
@@ -53,13 +52,12 @@ function getBy(props = query_options) {
 }
 
 function createOption(group) {
-    var option = null
+    var option = new Option()
 
     if (group.title) {
-        var text = unescape(`${group.color} - ${group.title}`.replace(/ /g, '%A0'))
-        option = new Option(text)
+        option.text = unescape(`${group.color} - ${group.title}`.replace(/ /g, '%A0'))
     } else {
-        option = new Option(`${group.color}`)
+        option.text = group.color
     }
 
     option.dataset.group_id = group.id
@@ -70,16 +68,19 @@ function createOption(group) {
     return option
 }
 
-async function fillSelectBox() {
+async function fillGroupsList() {
     var window_data = await chrome.windows.getCurrent()
     var settings = await promiseWrapper('user_settings', storageGetAllFrom)
     var windows = settings.all_instances ? {} : { windowId: window_data.id }
 
     select_group.options.length = 0
     select_group.add(new Option('All Tabs'))
-    select_group.add(new Option('Not Grouped'))
 
     chrome.tabGroups.query(windows, function (groups) {
+        if (groups.length) {
+            select_group.add(new Option('Not Grouped'))
+        }
+
         for (var i = 0; i < groups.length; i++) {
             select_group.add(createOption(groups[i]))
         }
@@ -88,10 +89,10 @@ async function fillSelectBox() {
     getTabsFromCertainGroup("All Tabs")
 }
 
-chrome.tabGroups.onUpdated.addListener(fillSelectBox)
-chrome.tabGroups.onCreated.addListener(fillSelectBox)
-chrome.tabGroups.onRemoved.addListener(fillSelectBox)
-chrome.tabGroups.onMoved.addListener(fillSelectBox)
+chrome.tabGroups.onUpdated.addListener(fillGroupsList)
+chrome.tabGroups.onCreated.addListener(fillGroupsList)
+chrome.tabGroups.onRemoved.addListener(fillGroupsList)
+chrome.tabGroups.onMoved.addListener(fillGroupsList)
 
 function setHeight() {
     list[0].setAttribute("style", `height: ${window.innerHeight / 1.5}px`)
@@ -322,6 +323,7 @@ function generateURLTitlePairs(tabs) {
 
 function buildFileObject(links = textarea.value) {
     var file_obj = {}
+
     file_obj.id = String(+ new Date())
     file_obj.time = getDate()
     file_obj.links = links
@@ -353,7 +355,7 @@ async function run() {
     if (settings.ignore_pinned) query_options.pinned = false
     if (settings.all_instances) delete query_options.currentWindow
 
-    fillSelectBox()
+    fillGroupsList()
     showFiles()
 }
 
@@ -385,24 +387,24 @@ async function pickFile(props) {
     var handles = await showOpenFilePicker(props)
     var file = await handles[0].getFile()
 
-    var import_contents = await file.text()
-    var json_cnt = await JSON.parse(import_contents)
+    var file_contents = await file.text()
+    var parse_file = await JSON.parse(file_contents)
 
-    return json_cnt
+    return parse_file
 }
 
 export_file_button.addEventListener('click', (e) => findByIdThenPerform(e, exportFile))
 
 import_file_button.addEventListener('click', async function () {
-    var json_cnt = await pickFile(props)
-    var is_exist = await findByIdThenPerform(json_cnt.id, isExist)
+    var file = await pickFile(props)
+    var is_exist = await findByIdThenPerform(file.id, isExist)
 
     if (is_exist) {
-        json_cnt.id = String(+ new Date())
-        json_cnt.time = getDate()
+        file.id = String(+ new Date())
+        file.time = getDate()
     }
 
-    addFile(json_cnt)
+    addFile(file)
 
     showFiles()
 })
@@ -419,9 +421,9 @@ export_all_files_button.addEventListener('click', async function () {
 })
 
 import_all_files_button.addEventListener('click', async function () {
-    var json_cnt = await pickFile(props)
+    var files = await pickFile(props)
 
-    await promiseWrapper({ files: json_cnt }, storageSave)
+    await promiseWrapper({ files: files }, storageSave)
     showFiles()
 })
 
@@ -452,12 +454,12 @@ async function composeSettingsObject() {
             break
     }
 
+    await promiseWrapper({ user_settings: settings }, storageSave)
+
     select_group.selectedIndex = 0
     deleteFolderActiveClass(file_ids.length)
-    fillSelectBox()
+    fillGroupsList()
     switchButtonsActiveness(false)
-
-    await promiseWrapper({ user_settings: settings }, storageSave)
 }
 
 ignore_pinned_checkbox.addEventListener('change', composeSettingsObject)
