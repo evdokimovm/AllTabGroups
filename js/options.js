@@ -285,13 +285,17 @@ function getFileContents(e, files, index) {
 }
 
 function exportFile(e, files, index) {
-    var filename = files[index].name
-    var url = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(files[index]))))
+    var file = index ? files[index] : files
+    var json = JSON.stringify(file)
+    var blob = new Blob([json], { type: 'application/json' })
+    var url = URL.createObjectURL(blob)
 
-    chrome.downloads.download({
-        url: url,
-        filename: (filename.replaceAll(':', ' ')) + '.json'
-    })
+    var link = document.createElement('a')
+    link.href = url
+    link.download = index ? files[index].name : 'alltabs.json'
+    link.click()
+
+    URL.revokeObjectURL(url)
 }
 
 async function addFile(new_file) {
@@ -411,13 +415,9 @@ import_file_button.addEventListener('click', async function () {
 
 export_all_files_button.addEventListener('click', async function () {
     var files = await promiseWrapper('files', storageGetAllFrom)
-    var result = JSON.stringify(files)
+    var _ = undefined
 
-    var url = 'data:application/json;base64,' + btoa(unescape(encodeURIComponent(result)))
-    chrome.downloads.download({
-        url: url,
-        filename: 'alltabs.json'
-    })
+    exportFile(_, files, _)
 })
 
 import_all_files_button.addEventListener('click', async function () {
