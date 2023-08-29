@@ -140,6 +140,51 @@
 
     select {
         text-transform: capitalize;
+        height: 36px;
+        width: 72px;
+    }
+
+    .groups_list {
+        display: inline-block;
+        margin-left: 10px;
+    }
+
+    .settings-dropdown {
+        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+        margin-left: 10px;
+        cursor: pointer;
+    }
+
+    .settings-btn {
+        padding: 7px 17px;
+        border: 1px solid #000;
+        font-weight: bold;
+        color: #000;
+        background-color: transparent;
+    }
+
+    .settings-btn:hover {
+        background-color: #f9f9f9;
+    }
+
+    .settings-dropdown.active .settings-btn {
+        background-color: #f9f9f9;
+    }
+
+    .settings-dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 180px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        padding: 10px;
+        z-index: 1;
+    }
+
+    .settings-dropdown.active .settings-dropdown-content {
+        display: block;
     }
 </style>
 <body>
@@ -160,12 +205,20 @@
                     <button type="button" class="btn btn-common grey import_file">IMPORT FILE</button>
                     <button type="button" class="btn btn-common red delete_file" disabled>DELETE</button>
 
-                    <span>Choose the group: </span><select class="form-select" style="height: 36px; width: 72px;" id="select_group"></select>
-                    <span>|</span>
-                    <span>Ignore pinned: </span><input class="settings ignore_pinned" data-type="pinned" type="checkbox">
-                    <span>|</span>
-                    <span>All windows: </span><input class="settings all_windows" data-type="windows" type="checkbox">
-                    <span>|</span>
+                    <div class="settings-dropdown" id="settingsDropdown">
+                        <button class="settings-btn">Settings</button>
+                        <div class="settings-dropdown-content">
+                            <input class="settings ignore_pinned" data-type="pinned" type="checkbox">
+                            <label for="ignore_pinned">Ignore pinned</label><br>
+                            <input class="settings all_windows" data-type="windows" type="checkbox">
+                            <label for="all_windows">All windows</label><br>
+                        </div>
+                    </div>
+
+                    <div class="groups_list">
+                        <span>Choose the group: </span>
+                        <select class="form-select" id="select_group"></select>
+                    </div>
                 </div>
                 <textarea></textarea>
             </div>

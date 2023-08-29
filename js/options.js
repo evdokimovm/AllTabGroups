@@ -7,6 +7,8 @@ var textarea = document.querySelector('textarea')
 var filename_input = document.querySelector('input[name=filename]')
 var all_windows_checkbox = document.querySelector('input.all_windows')
 var ignore_pinned_checkbox = document.querySelector('input.ignore_pinned')
+var settigns_dropdown = document.querySelector("#settingsDropdown")
+var dropdown_content = settigns_dropdown.querySelector(".settings-dropdown-content")
 
 var copy_button = document.querySelector('.copy')
 var save_button = document.querySelector('.save')
@@ -434,6 +436,12 @@ save_button.addEventListener('click', function () {
 
 textarea.addEventListener('input', function () {
     linkPreview()
+})
+
+settigns_dropdown.addEventListener('click', function (e) {
+    if (!dropdown_content.contains(e.target)) {
+        this.classList.toggle('active')
+    }
 })
 
 async function composeSettingsObject() {
