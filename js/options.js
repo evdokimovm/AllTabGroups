@@ -486,7 +486,11 @@ merge_files_button.addEventListener('click', async function () {
         links += await findByIdThenPerform(file_ids[i], getFileContents)
     }
 
-    var new_file = buildFileObject(links)
+    var pairs = links.trim().split('\n\n').filter(pair => pair.trim() !== '')
+    var onlyUniquePairs = Array.from(new Set(pairs))
+    var merged = onlyUniquePairs.join('\n\n') + '\n\n'
+
+    var new_file = buildFileObject(merged)
     addFile(new_file)
 
     switchButtonsActiveness(false)
