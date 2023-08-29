@@ -7,8 +7,9 @@ var textarea = document.querySelector('textarea')
 var filename_input = document.querySelector('input[name=filename]')
 var all_windows_checkbox = document.querySelector('input.all_windows')
 var ignore_pinned_checkbox = document.querySelector('input.ignore_pinned')
-var settigns_dropdown = document.querySelector("#settingsDropdown")
-var dropdown_content = settigns_dropdown.querySelector(".settings-dropdown-content")
+var delete_merged_checkbox = document.querySelector('input.delete_merged')
+var settigns_dropdown = document.querySelector('#settingsDropdown')
+var dropdown_content = settigns_dropdown.querySelector('.settings-dropdown-content')
 
 var copy_button = document.querySelector('.copy')
 var save_button = document.querySelector('.save')
@@ -24,7 +25,7 @@ var export_all_files_button = document.querySelector('button.export_all_files')
 
 var file_ids = []
 var query_options = { currentWindow: true }
-var default_settings = { all_instances: false, ignore_pinned: false }
+var default_settings = { all_instances: false, ignore_pinned: false, delete_merged: false }
 
 function getTabsFromCertainGroup(tab_type, data = null) {
     switch (tab_type) {
@@ -355,6 +356,7 @@ async function run() {
         await promiseWrapper({ user_settings: default_settings }, storageSave)
     }
 
+    delete_merged_checkbox.checked = settings.delete_merged
     ignore_pinned_checkbox.checked = settings.ignore_pinned
     all_windows_checkbox.checked = settings.all_instances
 
@@ -458,6 +460,10 @@ async function composeSettingsObject() {
             this.checked ? delete query_options.currentWindow : query_options.currentWindow = true
             break
 
+        case 'merged':
+            settings.delete_merged = this.checked
+            break
+
         default:
             break
     }
@@ -470,10 +476,13 @@ async function composeSettingsObject() {
     switchButtonsActiveness(false)
 }
 
+delete_merged_checkbox.addEventListener('change', composeSettingsObject)
 ignore_pinned_checkbox.addEventListener('change', composeSettingsObject)
 all_windows_checkbox.addEventListener('change', composeSettingsObject)
 
 merge_files_button.addEventListener('click', async function () {
+    var settings = await promiseWrapper('user_settings', storageGetAllFrom)
+
     if (file_ids.length < 2) {
         alert('Select multiple files with pressed CTRL then press MERGE')
 
@@ -484,6 +493,12 @@ merge_files_button.addEventListener('click', async function () {
 
     for (var i = 0; i < file_ids.length; i++) {
         links += await findByIdThenPerform(file_ids[i], getFileContents)
+    }
+
+    if (settings.delete_merged) {
+        for (var i = 0; i < file_ids.length; i++) {
+            await findByIdThenPerform(file_ids[i], deleteFile)
+        }
     }
 
     var pairs = links.trim().split('\n\n').filter(pair => pair.trim() !== '')
