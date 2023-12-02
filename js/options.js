@@ -288,14 +288,14 @@ function getFileContents(e, files, index) {
 }
 
 function exportFile(e, files, index) {
-    var file = index ? files[index] : files
+    var file = index >= 0 ? files[index] : files
     var json = JSON.stringify(file)
     var blob = new Blob([json], { type: 'application/json' })
     var url = URL.createObjectURL(blob)
 
     var link = document.createElement('a')
     link.href = url
-    link.download = index ? files[index].name : 'alltabs.json'
+    link.download = index >= 0 ? files[index].name : 'alltabs.json'
     link.click()
 
     URL.revokeObjectURL(url)
