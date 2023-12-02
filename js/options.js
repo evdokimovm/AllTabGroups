@@ -8,8 +8,8 @@ var filename_input = document.querySelector('input[name=filename]')
 var all_windows_checkbox = document.querySelector('input.all_windows')
 var ignore_pinned_checkbox = document.querySelector('input.ignore_pinned')
 var delete_merged_checkbox = document.querySelector('input.delete_merged')
-var settigns_dropdown = document.querySelector('#settingsDropdown')
-var dropdown_content = settigns_dropdown.querySelector('.settings-dropdown-content')
+var settings_dropdown = document.querySelector('#settingsDropdown')
+var dropdown_content = settings_dropdown.querySelector('.settings-dropdown-content')
 
 var copy_button = document.querySelector('.copy')
 var save_button = document.querySelector('.save')
@@ -440,7 +440,7 @@ textarea.addEventListener('input', function () {
     linkPreview()
 })
 
-settigns_dropdown.addEventListener('click', function (e) {
+settings_dropdown.addEventListener('click', function (e) {
     if (!dropdown_content.contains(e.target)) {
         this.classList.toggle('active')
     }
