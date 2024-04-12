@@ -34,7 +34,23 @@ textarea {
     padding-left: 30px;
     padding-right: 30px;
     font-size: 12px;
-    transition: 0.5s
+    transition: 0.5s;
+}
+
+.btn:hover {
+    color: #FFF;
+    transition: 0.5s;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn.active.focus {
+  color: #FFF;
+  outline: none;
+  transition: 0.5s;
 }
 
 .black {
@@ -42,7 +58,7 @@ textarea {
 }
 
 .black:hover {
-    color: #DADADA;
+    background: #333030;
 }
 
 .grey {
@@ -50,17 +66,30 @@ textarea {
 }
 
 .grey:hover {
-    color: #DADADA;
+    background: #9E9E9E;
 }
 
 .red {
-    background: #FF2400;
-    opacity: 0.80;
+    background: #E84646;
 }
 
 .red:hover {
-    color: whitesmoke;
-    opacity: 0.75;
+    background: #E85858;
+}
+
+.btn.red[disabled] {
+    background: #C97F7F;
+    opacity: 1;
+}
+
+.btn.grey[disabled] {
+    background: #B3AFAF;
+    opacity: 1;
+}
+
+.btn.black[disabled] {
+    background: #333030;
+    opacity: 1;
 }
 
 .input-light {
