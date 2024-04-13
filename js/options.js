@@ -10,7 +10,7 @@ var ignore_pinned_checkbox = document.querySelector('input.ignore_pinned')
 var delete_merged_checkbox = document.querySelector('input.delete_merged')
 var settings_dropdown = document.querySelector('#settingsDropdown')
 var dropdown_content = settings_dropdown.querySelector('.settings-dropdown-content')
-var open_dropdown_button = document.querySelector('.open_dropdown')
+var open_dropdown_buttons = document.querySelectorAll('.open_dropdown')
 
 var copy_button = document.querySelector('.copy')
 var save_button = document.querySelector('.save')
@@ -23,10 +23,14 @@ var delete_files_button = document.querySelector('.delete_files')
 var import_file_button = document.querySelector('button.import_file')
 var import_all_files_button = document.querySelector('button.import_all_files')
 var export_all_files_button = document.querySelector('button.export_all_files')
+var export_reading_list_button = document.querySelector('button.export_reading_list')
+var import_reading_list_button = document.querySelector('button.import_reading_list')
 
 var file_ids = []
 var query_options = { currentWindow: true }
 var default_settings = { all_instances: false, ignore_pinned: false, delete_merged: false }
+
+var _ = undefined
 
 function getTabsFromCertainGroup(tab_type, data = null) {
     switch (tab_type) {
@@ -293,7 +297,16 @@ function toggleDropdown(id) {
     dropdownMenu.classList.toggle('show')
 }
 
-function exportFile(e, files, index) {
+async function entryExists(url) {
+    var entryExists = await chrome.readingList.query({ url })
+    return entryExists
+}
+
+async function addReadingListEntry(title, url, hasBeenRead) {
+    await chrome.readingList.addEntry({ title, url, hasBeenRead })
+}
+
+function exportFile(e, files, index, filename = 'alltabs.json') {
     var file = index >= 0 ? files[index] : files
     var json = JSON.stringify(file)
     var blob = new Blob([json], { type: 'application/json' })
@@ -301,7 +314,7 @@ function exportFile(e, files, index) {
 
     var link = document.createElement('a')
     link.href = url
-    link.download = index >= 0 ? files[index].name : 'alltabs.json'
+    link.download = index >= 0 ? files[index].name : filename
     link.click()
 
     URL.revokeObjectURL(url)
@@ -425,7 +438,6 @@ import_file_button.addEventListener('click', async function () {
 
 export_all_files_button.addEventListener('click', async function () {
     var files = await promiseWrapper('files', storageGetAllFrom)
-    var _ = undefined
 
     exportFile(_, files, _)
 })
@@ -541,6 +553,31 @@ delete_file_button.addEventListener('click', async function () {
     }
 })
 
-open_dropdown_button.addEventListener('click', function() {
-    toggleDropdown(this.nextElementSibling.id)
+open_dropdown_buttons.forEach(function(button) {
+    button.addEventListener('click', function() {
+        toggleDropdown(this.nextElementSibling.id)
+    })
+})
+
+export_reading_list_button.addEventListener('click', async function(e) {
+    var items = await chrome.readingList.query({})
+
+    if (!items.length) {
+        alert('Your reading list is empty. There is nothing to export')
+
+        return
+    }
+
+    exportFile(_, items, _, 'reading_list.json')
+})
+
+import_reading_list_button.addEventListener('click', async function(e) {
+    var reading_list = await pickFile(props)
+    for (var entry of reading_list) {
+        if (entryExists(entry.url)) {
+            console.log(`URL ${entry.url} already exists. This entry will not be imported`)
+            continue
+        }
+        await addReadingListEntry(entry.title, entry.url, entry.hasBeenRead)
+    }
 })

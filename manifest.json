@@ -18,7 +18,8 @@
     "permissions": [
         "tabGroups",
         "tabs",
-        "storage"
+        "storage",
+        "readingList"
     ],
     "host_permissions": [
         "http://*/*",
