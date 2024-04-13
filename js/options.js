@@ -10,6 +10,7 @@ var ignore_pinned_checkbox = document.querySelector('input.ignore_pinned')
 var delete_merged_checkbox = document.querySelector('input.delete_merged')
 var settings_dropdown = document.querySelector('#settingsDropdown')
 var dropdown_content = settings_dropdown.querySelector('.settings-dropdown-content')
+var open_dropdown_button = document.querySelector('.open_dropdown')
 
 var copy_button = document.querySelector('.copy')
 var save_button = document.querySelector('.save')
@@ -287,6 +288,11 @@ function getFileContents(e, files, index) {
     return files[index].links
 }
 
+function toggleDropdown(id) {
+    var dropdownMenu = document.querySelector(`#${id}`)
+    dropdownMenu.classList.toggle('show')
+}
+
 function exportFile(e, files, index) {
     var file = index >= 0 ? files[index] : files
     var json = JSON.stringify(file)
@@ -533,4 +539,8 @@ delete_file_button.addEventListener('click', async function () {
 
         switchButtonsActiveness(false)
     }
+})
+
+open_dropdown_button.addEventListener('click', function() {
+    toggleDropdown(this.nextElementSibling.id)
 })

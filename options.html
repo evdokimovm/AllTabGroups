@@ -15,16 +15,23 @@
             <div class="col-md-3">
                 <div class="p-tb-20 p-lr-10">
                     <button type="button" class="btn btn-common black opentabs">OPEN ALL</button>
-                    <button type="button" class="btn btn-common grey export_all_files">EXPORT ALL</button>
-                    <button type="button" class="btn btn-common grey import_all_files">IMPORT ALL</button>
                     <ul class="list links"></ul>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="p-tb-20">
                     <button type="button" class="btn btn-common black copy">COPY</button>
-                    <button type="button" class="btn btn-common grey export_file" disabled>EXPORT FILE</button>
-                    <button type="button" class="btn btn-common grey import_file">IMPORT FILE</button>
+
+                    <div class="dropdown">
+                        <button class="btn btn-common grey open_dropdown">EXPORT AND IMPORT</button>
+                        <div id="export_import_buttons_dropdown" class="buttons-dropdown-content">
+                            <button type="button" class="btn btn-common grey export_all_files">EXPORT ALL</button>
+                            <button type="button" class="btn btn-common grey import_all_files">IMPORT ALL</button>
+                            <button type="button" class="btn btn-common grey export_file" disabled>EXPORT FILE</button>
+                            <button type="button" class="btn btn-common grey import_file">IMPORT FILE</button>
+                        </div>
+                    </div>
+
                     <button type="button" class="btn btn-common red delete_file" disabled>DELETE</button>
 
                     <div class="settings-dropdown" id="settingsDropdown">
